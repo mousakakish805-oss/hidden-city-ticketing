@@ -140,34 +140,47 @@ MESSAGES_EN: dict[str, str] = {
         "attracts little attention."
     ),
     "risk.MARGINAL_SAVINGS": (
-        "The gap is small enough that ordinary fare movement could erase it "
-        "before you book."
+        "The gap is small enough that ordinary fare movement could erase it before you book."
     ),
     "risk.LOW_AVAILABILITY": (
-        "Only {bookable_seats} seat(s) left in this fare bucket; the price is "
-        "likely to move."
+        "Only {bookable_seats} seat(s) left in this fare bucket; the price is likely to move."
     ),
-    "risk.NOT_ONE_WAY": (
-        "This offer has a return leg. Deplaning early would cancel it."
-    ),
+    "risk.NOT_ONE_WAY": ("This offer has a return leg. Deplaning early would cancel it."),
     "risk.IMMIGRATION": (
         "You must be admissible to enter {deplane_city} and clear immigration "
         "there. Confirm visa rules before booking."
     ),
+    # Shown to visitors when a search fails. Deliberately free of vendor
+    # names, exception classes and server-side instructions -- see
+    # services/errors.py.
+    "error.quota": (
+        "This service has reached its flight-data limit for now. Please try again later."
+    ),
+    "error.busy": (
+        "The flight-data service is busy right now. Please wait a moment and try again."
+    ),
+    "error.noFlights": (
+        "We could not find any flights for that route and date. Try a "
+        "different date, or a nearby airport."
+    ),
+    "error.misconfigured": (
+        "This service is temporarily unable to look up fares. Please try again later."
+    ),
+    "error.unreachable": (
+        "We could not reach the flight-data service. Please try again in a few minutes."
+    ),
+    "error.unexpected": "Something went wrong while searching. Please try again.",
     # -------------------------------------------------------------- warnings
     "warning.no_candidates": (
         "No plausible onward markets found beyond {destination}. It may be a "
         "route endpoint rather than a connecting hub."
     ),
     "warning.failed_probes": (
-        "{failed} of {total} extended queries failed or timed out; results may "
-        "be incomplete."
+        "{failed} of {total} extended queries failed or timed out; results may be incomplete."
     ),
     # ------------------------------------------------------- candidate reasons
     "candidate.learned": "Previously produced savings via {target}",
-    "candidate.cheaper_market": (
-        "{city} should price below {target_city} despite being further"
-    ),
+    "candidate.cheaper_market": ("{city} should price below {target_city} despite being further"),
     "candidate.nonstop": "{target} has nonstop service onward to {city}",
     "candidate.on_the_line": "{target} sits close to the line from {origin_city} to {city}",
     # --------------------------------------------------------------- booking

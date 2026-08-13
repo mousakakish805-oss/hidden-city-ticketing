@@ -19,7 +19,9 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import airports, health, reference, search, trends
 from app.config import settings
 from app.db.base import dispose_engine, init_models
+from app.i18n import DEFAULT_LANGUAGE
 from app.providers.registry import close_provider, get_provider
+from app.services.errors import user_facing_message
 from app.services.events import event_bus
 from app.services.search_service import SearchFailed
 
@@ -80,10 +82,17 @@ app.add_middleware(
 
 @app.exception_handler(SearchFailed)
 async def _search_failed_handler(request: Request, exc: SearchFailed) -> JSONResponse:
-    """A run that could not produce a comparison is a gateway problem, not a bug."""
+    """A run that could not produce a comparison is a gateway problem, not a bug.
+
+    The exception text names the provider and the upstream failure, which is
+    exactly what an operator wants and exactly what a visitor should not see,
+    so it goes to the log and a translated message goes to the browser.
+    """
+    logger.warning("Search failed for %s: %s", request.url.path, exc)
+    lang = request.query_params.get("lang", DEFAULT_LANGUAGE)
     return JSONResponse(
         status_code=status.HTTP_502_BAD_GATEWAY,
-        content={"detail": str(exc), "type": "search_failed"},
+        content={"detail": user_facing_message(exc, lang), "type": "search_failed"},
     )
 
 
@@ -108,6 +117,7 @@ if STATIC_DIR.is_dir():
     @app.get("/preview", include_in_schema=False)
     async def preview_ui() -> FileResponse:
         return FileResponse(STATIC_DIR / "index.html")
+
 
 if HAS_COMPILED_WEB:
     # Hashed asset filenames, so they are safe to cache aggressively.

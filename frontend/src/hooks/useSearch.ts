@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useI18n } from "../i18n";
 import { api, ApiError } from "../lib/api";
 import type { SearchEvent, SearchParams, SearchResult } from "../types";
 
@@ -32,6 +33,7 @@ const IDLE: SearchState = { busy: false, events: [], result: null, error: null }
 export function useSearch() {
   const [state, setState] = useState<SearchState>(IDLE);
   const sourceRef = useRef<EventSource | null>(null);
+  const { t } = useI18n();
 
   const closeStream = useCallback(() => {
     sourceRef.current?.close();
@@ -52,16 +54,13 @@ export function useSearch() {
       } catch (error) {
         setState({
           ...IDLE,
-          error:
-            error instanceof ApiError
-              ? error.message
-              : "Could not reach the API. Is the backend running?",
+          error: error instanceof ApiError ? error.message : t("error.unreachable"),
         });
         return;
       }
-      // Validation errors come back translated by the API; transport failures
-      // fall back to the English string above, which is the best we can do
-      // when the backend is unreachable.
+      // Validation and provider errors arrive from the API already translated
+      // and already stripped of anything internal. A transport failure never
+      // reaches the API at all, so that one is worded here.
 
       const source = new EventSource(api.eventStreamUrl(searchId));
       sourceRef.current = source;
@@ -79,7 +78,7 @@ export function useSearch() {
               setState((previous) => ({
                 ...previous,
                 busy: false,
-                error: error instanceof Error ? error.message : "Could not load the result.",
+                error: error instanceof ApiError ? error.message : t("error.result"),
               })),
             );
         }
@@ -100,11 +99,11 @@ export function useSearch() {
         setState((previous) =>
           previous.result || previous.error
             ? { ...previous, busy: false }
-            : { ...previous, busy: false, error: "Lost connection to the search stream." },
+            : { ...previous, busy: false, error: t("error.stream") },
         );
       };
     },
-    [closeStream],
+    [closeStream, t],
   );
 
   const reset = useCallback(() => {

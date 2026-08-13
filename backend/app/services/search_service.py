@@ -42,6 +42,7 @@ from app.providers.base import FlightProvider, Offer, SearchRequest
 from app.schemas.search import SearchRequestIn
 from app.services.cache import OfferCacheRepository
 from app.services.disclaimer import disclaimer_payload
+from app.services.errors import operator_detail, user_facing_message
 from app.services.events import event_bus
 
 logger = logging.getLogger(__name__)
@@ -128,10 +129,13 @@ class SearchService:
         except Exception as exc:  # noqa: BLE001 - recorded and surfaced to the client
             logger.exception("Search %s failed", search_id)
             record.status = "failed"
-            record.error = f"{type(exc).__name__}: {exc}"
+            # The technical text stays here and in the log; only the translated
+            # version is published to the browser.
+            record.error = operator_detail(exc)
+            record.user_error = user_facing_message(exc, params.lang)
             record.completed_at = datetime.now(UTC)
             await self._session.commit()
-            await self._publish(search_id, {"type": "failed", "error": record.error})
+            await self._publish(search_id, {"type": "failed", "error": record.user_error})
             raise
 
         duration_ms = int((time.perf_counter() - started) * 1000)

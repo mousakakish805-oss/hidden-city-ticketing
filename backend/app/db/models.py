@@ -146,7 +146,12 @@ class SearchQuery(Base, TimestampMixin):
 
     # pending | running | complete | failed
     status: Mapped[str] = mapped_column(String(16), default="pending", nullable=False)
+    # Two columns because there are two audiences. ``error`` is the exception
+    # type and vendor text, kept for whoever operates this; ``user_error`` is
+    # the translated, plain-language version that is safe to put in a browser.
+    # See services/errors.py.
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     baseline_price: Mapped[float | None] = mapped_column(Float, nullable=True)
     best_hidden_price: Mapped[float | None] = mapped_column(Float, nullable=True)

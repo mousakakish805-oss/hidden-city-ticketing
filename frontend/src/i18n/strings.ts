@@ -141,9 +141,11 @@ const en = {
 
   "footer.meta": "Provider: {provider} · {probes} markets priced in {ms} ms · generated {time}",
 
-  "error.generic": "Something went wrong.",
-  "error.unreachable": "Could not reach the API. Is the backend running?",
-  "error.stream": "Lost connection to the search stream.",
+  "error.generic": "Something went wrong. Please try again.",
+  "error.unreachable":
+    "We could not reach the price service. It may be waking up — wait a moment and try again.",
+  "error.stream": "The connection dropped before the search finished. Please try again.",
+  "error.result": "The search finished but the results could not be loaded. Please try again.",
 
   "theme.toDark": "Switch to the dark theme",
   "theme.toLight": "Switch to the light theme",
@@ -302,9 +304,11 @@ const ar: Record<StringKey, string> = {
 
   "footer.meta": "المزوّد: {provider} · تم تسعير {probes} سوقاً خلال {ms} مللي ثانية · {time}",
 
-  "error.generic": "حدث خطأ ما.",
-  "error.unreachable": "تعذّر الوصول إلى الخادم. هل الخادم الخلفي يعمل؟",
-  "error.stream": "انقطع الاتصال ببث نتائج البحث.",
+  "error.generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+  "error.unreachable":
+    "تعذّر الوصول إلى خدمة الأسعار. قد تكون في طور التشغيل — انتظر لحظة ثم حاول مجدداً.",
+  "error.stream": "انقطع الاتصال قبل اكتمال البحث. يرجى المحاولة مرة أخرى.",
+  "error.result": "اكتمل البحث لكن تعذّر تحميل النتائج. يرجى المحاولة مرة أخرى.",
 
   "theme.toDark": "التبديل إلى المظهر الداكن",
   "theme.toLight": "التبديل إلى المظهر الفاتح",

@@ -16,6 +16,7 @@ from app.api.deps import ProviderDep, SessionDep
 from app.config import settings
 from app.db.base import SessionLocal
 from app.db.models import DisclaimerAcknowledgement
+from app.i18n import DEFAULT_LANGUAGE, translate
 from app.providers.registry import get_provider
 from app.schemas.search import (
     AcknowledgementIn,
@@ -102,7 +103,8 @@ async def get_search(search_id: str, session: SessionDep) -> dict[str, Any]:
     if record.status == "failed":
         raise HTTPException(
             status.HTTP_502_BAD_GATEWAY,
-            detail=record.error or "The search failed upstream.",
+            # Never record.error -- that one names the vendor and the exception.
+            detail=record.user_error or translate("error.unexpected", DEFAULT_LANGUAGE),
         )
 
     return {
