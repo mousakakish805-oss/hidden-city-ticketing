@@ -1,0 +1,84 @@
+# Render blueprint: the API, the database, and (optionally) the website.
+#
+# Render reads this file and provisions everything in one go:
+#   dashboard.render.com -> New -> Blueprint -> pick this repository
+#
+# This project is deployed as: API here on Render, website on Netlify.
+#
+# The image still builds and serves its own copy of the website. That is not
+# waste -- it means this URL alone is a working site, which is the quickest
+# way to tell an API problem apart from a Netlify problem when something
+# breaks.
+#
+# Order matters, because each side needs the other's address:
+#   1. Deploy here first and note the URL (https://<name>.onrender.com)
+#   2. Build and deploy the website to Netlify with VITE_API_BASE set to it
+#   3. Come back and set CORS_ORIGINS to the Netlify address
+#
+# Until step 3 the browser will refuse the API calls, and that is CORS doing
+# its job, not a bug.
+
+services:
+  - type: web
+    name: hidden-city
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt          # closest of Render's regions to Jordan
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: prod
+      - key: DEBUG
+        value: "false"
+
+      # Alembic owns the schema in production; the container runs
+      # `alembic upgrade head` before serving. create_all cannot alter a
+      # table that already exists, so it must not be relied on here.
+      - key: AUTO_CREATE_SCHEMA
+        value: "false"
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hidden-city-db
+          property: connectionString
+
+      # Set this in the dashboard once Netlify has given you an address, e.g.
+      #   https://your-site.netlify.app
+      # Comma-separated if you have more than one (a custom domain, previews).
+      # Leave it unset and the website on Netlify cannot call this API at all.
+      - key: CORS_ORIGINS
+        sync: false
+
+      # --- Flight data -----------------------------------------------------
+      # Set these in the Render dashboard, NOT here. Anything written in this
+      # file is committed to the repository.
+      - key: FLIGHT_PROVIDER
+        sync: false
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: RAPIDAPI_HOST
+        sync: false
+
+      # --- Cost control ----------------------------------------------------
+      # Each candidate is one upstream API call, and the Sky Scrapper listing
+      # needs a retry per search, so the real cost is roughly
+      #   (MAX_CANDIDATE_DESTINATIONS + 1) x 2
+      - key: MAX_CANDIDATE_DESTINATIONS
+        value: "4"
+      - key: OFFER_CACHE_TTL_SECONDS
+        value: "21600"
+      - key: PROVIDER_CONCURRENCY
+        value: "1"
+
+      # One worker only. The live progress stream is in-process, so a second
+      # worker would leave browsers watching a search running on the other
+      # one. Add a Redis instance and REDIS_URL before raising this.
+      - key: WEB_CONCURRENCY
+        value: "1"
+
+databases:
+  - name: hidden-city-db
+    plan: free
+    region: frankfurt

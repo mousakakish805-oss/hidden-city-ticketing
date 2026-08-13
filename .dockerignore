@@ -1,0 +1,28 @@
+# Keep the build context small and secrets out of the image.
+**/.env
+**/.env.*
+!**/.env.example
+
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/*.tsbuildinfo
+
+# Local databases must never be baked into an image.
+**/*.db
+**/*.sqlite3
+
+# Cached OpenFlights downloads; the *generated* datasets are committed and
+# are required, so they are deliberately not excluded here.
+backend/.cache
+
+.git
+.github
+**/.DS_Store
+**/Thumbs.db
+.claude

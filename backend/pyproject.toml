@@ -1,0 +1,30 @@
+[project]
+name = "hidden-city-ticketing"
+version = "1.0.0"
+description = "Multi-segment flight price-anomaly detection (hidden-city ticketing)"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning:pandas.*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
+# Calling Query()/Depends() in a default is the FastAPI idiom; the framework
+# resolves them per request, so B008's shared-mutable-default concern does not apply.
+"app/api/routes/*" = ["B008"]
+# Catalog files are long strings that read better unwrapped.
+"app/i18n/*" = ["E501"]

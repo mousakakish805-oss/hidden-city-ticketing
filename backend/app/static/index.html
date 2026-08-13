@@ -1,0 +1,855 @@
+<!doctype html>
+<!--
+  Zero-build preview UI.
+
+  The primary frontend is the React + Vite + Tailwind app in ../../frontend.
+  This single file exists so the backend is fully demonstrable without a Node
+  toolchain: same API, same mandatory disclaimer gate, same Arabic/English
+  support. It needs an internet connection for the CDN scripts.
+-->
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hidden-City Ticketing</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.3.1",
+        "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
+      }
+    }
+  </script>
+  <style>
+    body { background: #09090b; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .fade-up { animation: fadeUp .25s ease-out both; }
+    input[type="date"] { color-scheme: dark; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 antialiased">
+<div id="root"></div>
+
+<script type="text/babel" data-type="module" data-presets="react">
+// Babel's React preset emits `import ... from "react/jsx-runtime"`, so this
+// compiles to an ES module and the import map above resolves the bare
+// specifiers. No bundler involved.
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createRoot } from "react-dom/client";
+
+const API = "/api";
+const ACK_KEY = "hct.disclaimer.version";
+const LANG_KEY = "hct.lang";
+
+/* ------------------------------------------------------------------- i18n */
+/* Only UI chrome lives here. The disclaimer, risk warnings and booking steps
+   arrive from the API already translated -- they interpolate live values and
+   the disclaimer is versioned, so it has one authoritative source. */
+
+const STRINGS = {
+  en: {
+    title: "Hidden-City Ticketing", subtitle: "Multi-segment flight price comparison",
+    rules: "Rules & risks", live: "live fares", synthetic: "test data",
+    quotaLeft: "{n} left", quotaEmpty: "quota spent",
+    from: "From", to: "To", toHint: "where you actually want to go",
+    departure: "Departure", search: "Find anomalies", searching: "Scanning...",
+    passengers: "Passengers", cabin: "Cabin", nearby: "Accept nearby airports",
+    bypass: "Bypass cache", sameAirports: "Origin and destination must differ.",
+    hoursMinutes: "{h}h {m}m", minutesOnly: "{m}m",
+    ECONOMY: "Economy", PREMIUM_ECONOMY: "Premium economy", BUSINESS: "Business", FIRST: "First",
+    engine: "Batch engine", probed: "markets priced", baselineFare: "Baseline direct fare",
+    across: "across", offers: "offers",
+    opportunities: "hidden-city opportunities", opportunity: "hidden-city opportunity",
+    bestSaving: "Best saving", noneTitle: "No hidden-city savings found",
+    noneBody: "Flying direct to {city} is already the cheapest way there. We priced {n} onward markets beyond it.",
+    lockedTitle: "{n} option(s) found, saving up to {amount}",
+    lockedBody: "Hidden-city ticketing carries rules that void your ticket if you break them. Read them before these results are shown.",
+    lockedButton: "Read the rules to continue",
+    badge: "Hidden-city alternative", bookTo: "Book to", getOffAt: "Get off at",
+    yourDestination: "your actual destination", save: "Save", youSkip: "you skip this",
+    travelTime: "Your travel time", arrive: "You arrive", airline: "Airline",
+    groundTime: "Ground time at your stop", confidence: "confidence",
+    showAll: "Show all {n} warnings", showCritical: "Show only critical warnings",
+    bookingTitle: "How to book this", openSite: "Open {airline}",
+    bookingNote: "We only show prices. You book on the airline's own site.",
+    standardTitle: "Standard flights to", standardSub: "What an ordinary search shows:",
+    cheapest: "cheapest direct", nonstop: "nonstop", stop: "stop", stops: "stops",
+    matrixTitle: "Comparative price matrix",
+    matrixSub: "Cheapest fare per ticketed destination and airline. Anything cheaper than your target row is a city you can fly past it to, for less.",
+    ticketedTo: "Ticketed to", best: "Best", yourTarget: "your target",
+    versionNote: "Version {v}. Tick the {n} critical rules to continue.",
+    accept: "I understand the risks",
+    intro: "Enter where you are and where you actually want to go. We price the direct route, then price flights that continue past your destination -- and show you when the longer trip costs less.",
+    provider: "Provider", pricedIn: "markets priced in",
+  },
+  ar: {
+    title: "تذاكر الوجهة المخفية", subtitle: "مقارنة أسعار الرحلات متعددة المراحل",
+    rules: "القواعد والمخاطر", live: "أسعار حقيقية", synthetic: "بيانات تجريبية",
+    quotaLeft: "بقي {n}", quotaEmpty: "نفدت الحصة",
+    from: "من", to: "إلى", toHint: "الوجهة التي تريدها فعلاً",
+    departure: "تاريخ المغادرة", search: "ابحث عن الفروقات", searching: "جارٍ البحث...",
+    passengers: "المسافرون", cabin: "الدرجة", nearby: "اقبل المطارات القريبة",
+    bypass: "تجاهل الذاكرة المؤقتة", sameAirports: "يجب أن تختلف نقطة الانطلاق عن الوجهة.",
+    hoursMinutes: "{h} س {m} د", minutesOnly: "{m} د",
+    ECONOMY: "السياحية", PREMIUM_ECONOMY: "السياحية المميزة", BUSINESS: "رجال الأعمال", FIRST: "الأولى",
+    engine: "محرّك البحث المتوازي", probed: "سوقاً تم تسعيرها", baselineFare: "السعر المباشر المرجعي",
+    across: "من بين", offers: "عرضاً",
+    opportunities: "فرص وجهة مخفية", opportunity: "فرصة وجهة مخفية",
+    bestSaving: "أعلى توفير", noneTitle: "لم نجد أي توفير عبر الوجهة المخفية",
+    noneBody: "الرحلة المباشرة إلى {city} هي أصلاً أرخص طريقة للوصول. سعّرنا {n} من الأسواق اللاحقة بعدها.",
+    lockedTitle: "وجدنا {n} خياراً، بتوفير يصل إلى {amount}",
+    lockedBody: "لحجز الوجهة المخفية قواعد تُبطل تذكرتك إذا خالفتها. اقرأها قبل أن تظهر لك هذه النتائج.",
+    lockedButton: "اقرأ القواعد للمتابعة",
+    badge: "بديل الوجهة المخفية", bookTo: "احجز إلى", getOffAt: "انزل في",
+    yourDestination: "وجهتك الحقيقية", save: "وفّر", youSkip: "تتخطى هذه",
+    travelTime: "مدة سفرك", arrive: "وقت وصولك", airline: "شركة الطيران",
+    groundTime: "مدة التوقف في محطتك", confidence: "درجة الثقة",
+    showAll: "اعرض كل التحذيرات ({n})", showCritical: "اعرض التحذيرات الحرجة فقط",
+    bookingTitle: "كيف تحجز هذه الرحلة", openSite: "افتح موقع {airline}",
+    bookingNote: "نحن نعرض الأسعار فقط. الحجز يتم على موقع شركة الطيران نفسها.",
+    standardTitle: "الرحلات الاعتيادية إلى", standardSub: "ما يعرضه البحث العادي:",
+    cheapest: "أرخص رحلة مباشرة", nonstop: "بدون توقف", stop: "توقف", stops: "محطات توقف",
+    matrixTitle: "مصفوفة مقارنة الأسعار",
+    matrixSub: "أرخص سعر لكل وجهة مذكورة على التذكرة ولكل شركة طيران. أي صف أرخص من صف وجهتك هو مدينة يمكنك تجاوز وجهتك إليها بسعر أقل.",
+    ticketedTo: "الوجهة على التذكرة", best: "الأفضل", yourTarget: "وجهتك",
+    versionNote: "الإصدار {v}. علّم على القواعد الحرجة ({n}) للمتابعة.",
+    accept: "أفهم المخاطر",
+    intro: "أدخل موقعك الحالي والوجهة التي تريدها فعلاً. نُسعّر الرحلة المباشرة، ثم نُسعّر الرحلات التي تكمل إلى ما بعد وجهتك، ونُظهر لك متى تكون الرحلة الأطول أرخص.",
+    provider: "المزوّد", pricedIn: "سوقاً تم تسعيرها خلال",
+  },
+};
+
+const LangContext = React.createContext({ lang: "en", t: (k) => k, locale: "en" });
+const useLang = () => React.useContext(LangContext);
+
+/* ---------------------------------------------------------------- helpers */
+
+const money = (value, currency, locale) =>
+  value == null ? "--" : new Intl.NumberFormat(locale, {
+    style: "currency", currency: currency || "USD", maximumFractionDigits: 0,
+  }).format(value);
+
+const duration = (t, minutes) => {
+  if (minutes == null) return "--";
+  const hours = Math.floor(minutes / 60), rest = minutes % 60;
+  return hours
+    ? t("hoursMinutes").replace("{h}", hours).replace("{m}", String(rest).padStart(2, "0"))
+    : t("minutesOnly").replace("{m}", rest);
+};
+
+const clock = (iso, locale) =>
+  new Date(iso).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+
+const day = (iso, locale) =>
+  new Date(iso).toLocaleDateString(locale, { month: "short", day: "numeric" });
+
+const BAND = {
+  high: "text-emerald-300 bg-emerald-500/10 ring-emerald-500/30",
+  medium: "text-amber-300 bg-amber-500/10 ring-amber-500/30",
+  low: "text-rose-300 bg-rose-500/10 ring-rose-500/30",
+};
+
+const SEVERITY = {
+  critical: "border-rose-500/40 bg-rose-500/5 text-rose-200",
+  warning: "border-amber-500/40 bg-amber-500/5 text-amber-200",
+  info: "border-sky-500/40 bg-sky-500/5 text-sky-200",
+};
+
+/* ------------------------------------------------------------------ inputs */
+
+function AirportInput({ label, hint, value, onChange, placeholder }) {
+  const [options, setOptions] = useState([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const timer = setTimeout(async () => {
+      const response = await fetch(`${API}/airports?q=${encodeURIComponent(value)}&limit=8`);
+      setOptions(await response.json());
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [value, open]);
+
+  return (
+    <div className="relative">
+      <label className="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1.5">
+        {label}
+        {hint && <span className="ms-2 normal-case tracking-normal text-zinc-600">{hint}</span>}
+      </label>
+      <input
+        value={value}
+        placeholder={placeholder}
+        maxLength={3}
+        autoComplete="off"
+        dir="ltr"
+        onChange={(event) => {
+          // Track raw typing, not just picking a suggestion, so a typed code
+          // is never silently ignored.
+          onChange(event.target.value.toUpperCase());
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        className="w-full rounded-lg bg-zinc-900 ring-1 ring-zinc-800 px-3 py-2.5 text-lg font-semibold tracking-wide
+                   focus:outline-none focus:ring-2 focus:ring-sky-500 placeholder:text-zinc-700 placeholder:font-normal"
+      />
+      {open && options.length > 0 && (
+        <ul className="absolute z-30 mt-1 w-full max-h-64 overflow-auto rounded-lg bg-zinc-900 ring-1 ring-zinc-700 shadow-2xl">
+          {options.map((airport) => (
+            <li key={airport.iata}>
+              <button type="button" onMouseDown={() => { onChange(airport.iata); setOpen(false); }}
+                className="w-full text-start px-3 py-2 hover:bg-zinc-800 flex items-baseline gap-2">
+                <span className="font-mono font-bold text-sky-400 w-10" dir="ltr">{airport.iata}</span>
+                <span className="text-sm truncate">{airport.city}</span>
+                <span className="text-xs text-zinc-500 ms-auto shrink-0 ps-2">{airport.country}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function SearchForm({ onSearch, busy }) {
+  const { t, lang } = useLang();
+  const [form, setForm] = useState({
+    origin: "AMM", destination: "IST",
+    departure_date: new Date(Date.now() + 45 * 864e5).toISOString().slice(0, 10),
+    adults: 1, cabin: "ECONOMY", currency: "USD",
+    include_nearby_airports: false, refresh: false,
+  });
+
+  const set = (patch) => setForm((previous) => ({ ...previous, ...patch }));
+  const same = form.origin === form.destination && form.origin.length === 3;
+
+  return (
+    <form onSubmit={(event) => { event.preventDefault(); if (!same) onSearch({ ...form, lang }); }}
+      className="rounded-2xl bg-zinc-900/60 ring-1 ring-zinc-800 p-5 backdrop-blur">
+      <div className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_auto]">
+        <AirportInput label={t("from")} value={form.origin} placeholder="AMM"
+          onChange={(iata) => set({ origin: iata })} />
+        <AirportInput label={t("to")} hint={t("toHint")} value={form.destination} placeholder="IST"
+          onChange={(iata) => set({ destination: iata })} />
+        <div>
+          <label className="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1.5">
+            {t("departure")}
+          </label>
+          <input type="date" value={form.departure_date} min={new Date().toISOString().slice(0, 10)}
+            onChange={(event) => set({ departure_date: event.target.value })}
+            className="w-full rounded-lg bg-zinc-900 ring-1 ring-zinc-800 px-3 py-2.5 text-base
+                       focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+        <div className="flex items-end">
+          <button type="submit" disabled={busy || same}
+            className="w-full md:w-auto rounded-lg bg-sky-500 hover:bg-sky-400 disabled:bg-zinc-800
+                       disabled:text-zinc-600 px-6 py-2.5 font-semibold text-zinc-950 transition">
+            {busy ? t("searching") : t("search")}
+          </button>
+        </div>
+      </div>
+
+      {same && <p className="mt-3 text-sm text-rose-300">{t("sameAirports")}</p>}
+
+      <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-zinc-400">
+        <label className="flex items-center gap-2">
+          <span>{t("passengers")}</span>
+          <input type="number" min="1" max="9" value={form.adults}
+            onChange={(event) => set({ adults: Number(event.target.value) })}
+            className="w-16 rounded bg-zinc-900 ring-1 ring-zinc-800 px-2 py-1" />
+        </label>
+        <label className="flex items-center gap-2">
+          <span>{t("cabin")}</span>
+          <select value={form.cabin} onChange={(event) => set({ cabin: event.target.value })}
+            className="rounded bg-zinc-900 ring-1 ring-zinc-800 px-2 py-1">
+            {["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"].map((cabin) => (
+              <option key={cabin} value={cabin}>{t(cabin)}</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={form.include_nearby_airports}
+            onChange={(event) => set({ include_nearby_airports: event.target.checked })}
+            className="accent-sky-500" />
+          <span>{t("nearby")}</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={form.refresh}
+            onChange={(event) => set({ refresh: event.target.checked })}
+            className="accent-sky-500" />
+          <span>{t("bypass")}</span>
+        </label>
+      </div>
+    </form>
+  );
+}
+
+/* ---------------------------------------------------------------- progress */
+
+function Progress({ events }) {
+  const { t, locale } = useLang();
+  if (!events.length) return null;
+  const probes = events.filter((event) => event.type === "probe_finished");
+  const candidates = events.find((event) => event.type === "candidates");
+  const baseline = events.find((event) => event.type === "baseline");
+  const planned = candidates ? candidates.count : 0;
+
+  return (
+    <div className="rounded-2xl bg-zinc-900/60 ring-1 ring-zinc-800 p-5 fade-up">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-zinc-300">{t("engine")}</h3>
+        <span className="text-sm text-zinc-500">{probes.length}/{planned || "?"} {t("probed")}</span>
+      </div>
+      {planned > 0 && (
+        <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden mb-4">
+          <div className="h-full bg-sky-500 transition-all duration-300"
+            style={{ width: `${Math.min(100, (probes.length / planned) * 100)}%` }} />
+        </div>
+      )}
+      {baseline && (
+        <p className="text-sm text-zinc-400 mb-3">
+          {t("baselineFare")} <span className="font-semibold text-zinc-100">
+            {money(baseline.price, baseline.currency, locale)}</span> {t("across")} {baseline.offer_count} {t("offers")}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-1.5" dir="ltr">
+        {probes.map((probe, index) => (
+          <span key={`${probe.destination}-${index}`}
+            className={`px-2 py-0.5 rounded text-xs font-mono ring-1 ${
+              probe.error ? "bg-rose-500/10 text-rose-300 ring-rose-500/30"
+                          : "bg-zinc-800 text-zinc-300 ring-zinc-700"}`}>
+            {probe.destination}
+            {probe.min_price != null && <span className="ms-1.5 text-emerald-400">{Math.round(probe.min_price)}</span>}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- disclaimer */
+
+function DisclaimerModal({ disclaimer, onAccept, onDismiss }) {
+  const { t } = useLang();
+  const [checked, setChecked] = useState({});
+  const required = disclaimer.required_codes;
+  const ready = required.every((code) => checked[code]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={onDismiss}>
+      <div onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-zinc-900 ring-1 ring-zinc-700 shadow-2xl">
+        <div className="p-6 border-b border-zinc-800 shrink-0">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl leading-none" aria-hidden="true">&#9888;</span>
+            <div>
+              <h2 className="text-xl font-bold">{disclaimer.title}</h2>
+              <p className="mt-2 text-sm text-zinc-400 leading-relaxed">{disclaimer.summary}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto p-6 space-y-3 min-h-0">
+          {disclaimer.rules.map((rule) => (
+            <div key={rule.code} className={`rounded-xl border p-4 ${SEVERITY[rule.severity]}`}>
+              <label className={`flex gap-3 ${rule.required ? "cursor-pointer" : ""}`}>
+                {rule.required && (
+                  <input type="checkbox" checked={!!checked[rule.code]}
+                    onChange={(event) => setChecked((previous) => ({ ...previous, [rule.code]: event.target.checked }))}
+                    className="mt-1 accent-emerald-500 size-4 shrink-0" />
+                )}
+                <div className={rule.required ? "" : "ps-7"}>
+                  <p className="font-semibold">{rule.title}</p>
+                  <p className="mt-1 text-sm text-zinc-300/90 leading-relaxed">{rule.body}</p>
+                </div>
+              </label>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-6 border-t border-zinc-800 flex items-center justify-between gap-4 shrink-0">
+          <p className="text-xs text-zinc-500">
+            {t("versionNote").replace("{v}", disclaimer.version).replace("{n}", required.length)}
+          </p>
+          <button disabled={!ready} onClick={() => onAccept(disclaimer.version)}
+            className="rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-600
+                       px-5 py-2.5 font-semibold text-zinc-950 transition shrink-0">
+            {t("accept")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ results */
+
+function Timeline({ itinerary, deplaneIata }) {
+  const path = itinerary.path;
+  const deplaneAt = deplaneIata ? path.indexOf(deplaneIata) : -1;
+  const hasSkip = deplaneAt > 0 && deplaneAt < path.length - 1;
+
+  // Forced LTR: a route is read in travel order, so mirroring it in Arabic
+  // would reverse the journey.
+  return (
+    <div className="flex items-center gap-1 flex-wrap text-sm" dir="ltr">
+      {path.map((code, index) => {
+        const isDeplane = hasSkip && index === deplaneAt;
+        const isSkipped = hasSkip && index > deplaneAt;
+        return (
+          <React.Fragment key={`${code}-${index}`}>
+            {index > 0 && (
+              <span className={isSkipped ? "text-zinc-700" : "text-zinc-600"} aria-hidden="true">
+                {isSkipped ? "⇢" : "→"}
+              </span>
+            )}
+            <span className={`font-mono font-bold px-1.5 py-0.5 rounded ${
+              isDeplane ? "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40"
+                : isSkipped ? "text-zinc-600 line-through" : "text-zinc-200"}`}>
+              {code}
+            </span>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+function BookingPanel({ booking }) {
+  const { t } = useLang();
+  return (
+    <div className="mt-4 rounded-xl bg-zinc-950/40 ring-1 ring-zinc-800 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">
+            {t("bookingTitle")}
+          </p>
+          <p className="text-sm text-zinc-300">{booking.instructions}</p>
+          {booking.note && <p className="text-sm text-amber-300/90 mt-1">{booking.note}</p>}
+          <p className="text-xs text-zinc-600 mt-1.5">{t("bookingNote")}</p>
+        </div>
+        {booking.url && (
+          <a href={booking.url} target="_blank" rel="noopener noreferrer"
+            className="shrink-0 rounded-lg bg-zinc-100 hover:bg-white px-4 py-2 text-sm font-semibold text-zinc-900 transition">
+            {t("openSite").replace("{airline}", booking.carrier_name)} &#8599;
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HiddenCityCard({ option, currency }) {
+  const { t, locale } = useLang();
+  const [showAll, setShowAll] = useState(false);
+  const itinerary = option.offer.itineraries[0];
+  const flown = itinerary.segments.slice(0, option.deplane_index + 1);
+  const skipped = itinerary.segments.slice(option.deplane_index + 1);
+  const critical = option.risk.flags.filter((flag) => flag.severity === "critical");
+  const shown = showAll ? option.risk.flags : critical;
+
+  return (
+    <article className="rounded-2xl bg-gradient-to-b from-emerald-500/[0.07] to-transparent ring-1 ring-emerald-500/25 p-5 fade-up">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-emerald-400 font-semibold mb-1">{t("badge")}</p>
+          <h3 className="text-lg font-bold">
+            {t("bookTo")} {option.ticketed_city}
+            <span className="font-mono text-zinc-400" dir="ltr"> ({option.ticketed_iata})</span>
+          </h3>
+          <p className="text-sm text-zinc-400 mt-0.5">
+            <span className="text-emerald-300 font-semibold">
+              {t("getOffAt")} {option.deplane_city} <span dir="ltr">({option.deplane_iata})</span>
+            </span>
+            {" — "}{t("yourDestination")}
+          </p>
+        </div>
+        <div className="text-end">
+          <p className="text-3xl font-bold text-emerald-400">{money(option.price, currency, locale)}</p>
+          <p className="text-sm text-zinc-500 line-through">{money(option.baseline_price, currency, locale)}</p>
+          <p className="text-sm font-semibold text-emerald-300 mt-0.5">
+            {t("save")} {money(option.savings, currency, locale)} ({option.savings_percent}%)
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Timeline itinerary={itinerary} deplaneIata={option.deplane_iata} />
+        <span className={`text-xs font-semibold px-2 py-1 rounded-full ring-1 ${BAND[option.risk.band]}`}>
+          {t("confidence")} {option.risk.confidence}/100
+        </span>
+      </div>
+
+      <div className="mt-4 rounded-xl bg-zinc-950/50 ring-1 ring-zinc-800 divide-y divide-zinc-800" dir="ltr">
+        {flown.map((segment, index) => (
+          <div key={index} className="flex items-center gap-3 px-3 py-2 text-sm">
+            <span className="font-mono text-xs text-zinc-500 w-16 shrink-0" title={segment.carrier_name}>
+              {segment.carrier} {segment.flight_number}</span>
+            <span className="font-mono">{segment.origin}</span>
+            <span className="text-zinc-500">{clock(segment.departure_at, locale)}</span>
+            <span className="text-zinc-700">&#8594;</span>
+            <span className="font-mono">{segment.destination}</span>
+            <span className="text-zinc-500">{clock(segment.arrival_at, locale)}</span>
+            <span className="ms-auto text-xs text-zinc-500">{duration(t, segment.duration_minutes)}</span>
+          </div>
+        ))}
+        {skipped.map((segment, index) => (
+          <div key={`skip-${index}`} className="flex items-center gap-3 px-3 py-2 text-sm text-zinc-600">
+            <span className="font-mono text-xs w-16 shrink-0">{segment.carrier} {segment.flight_number}</span>
+            <span className="font-mono line-through">{segment.origin}</span>
+            <span className="text-zinc-700">&#8594;</span>
+            <span className="font-mono line-through">{segment.destination}</span>
+            <span className="ms-auto text-xs uppercase tracking-wider text-rose-400/70">{t("youSkip")}</span>
+          </div>
+        ))}
+      </div>
+
+      <dl className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+        <div><dt className="text-zinc-500 text-xs">{t("travelTime")}</dt>
+          <dd className="font-semibold">{duration(t, option.usable_duration_minutes)}</dd></div>
+        <div><dt className="text-zinc-500 text-xs">{t("arrive")}</dt>
+          <dd className="font-semibold">{day(option.usable_arrival, locale)} {clock(option.usable_arrival, locale)}</dd></div>
+        <div><dt className="text-zinc-500 text-xs">{t("airline")}</dt>
+          <dd className="font-semibold">{option.booking.carrier_name}</dd></div>
+        <div><dt className="text-zinc-500 text-xs">{t("groundTime")}</dt>
+          <dd className="font-semibold">{duration(t, option.layover_minutes)}</dd></div>
+      </dl>
+
+      <BookingPanel booking={option.booking} />
+
+      <div className="mt-4 space-y-2">
+        {shown.map((flag) => (
+          <div key={flag.code} className={`rounded-lg border px-3 py-2 text-sm ${SEVERITY[flag.severity]}`}>
+            {flag.message}
+          </div>
+        ))}
+        <button onClick={() => setShowAll(!showAll)}
+          className="text-xs text-zinc-500 hover:text-zinc-300 underline underline-offset-2">
+          {showAll ? t("showCritical") : t("showAll").replace("{n}", option.risk.flags.length)}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function StandardOffer({ offer, currency, isCheapest }) {
+  const { t, locale } = useLang();
+  const itinerary = offer.itineraries[0];
+  const label = offer.stop_count === 0 ? t("nonstop")
+    : `${offer.stop_count} ${offer.stop_count === 1 ? t("stop") : t("stops")}`;
+
+  return (
+    <div className={`rounded-xl bg-zinc-900/50 ring-1 p-4 ${isCheapest ? "ring-sky-500/40" : "ring-zinc-800"}`}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <Timeline itinerary={itinerary} />
+          <p className="mt-1.5 text-xs text-zinc-500">
+            {offer.primary_carrier_name} &middot; {duration(t, itinerary.duration_minutes)} &middot; {label} &middot;{" "}
+            <span dir="ltr">{clock(itinerary.segments[0].departure_at, locale)} &ndash;{" "}
+              {clock(itinerary.segments[itinerary.segments.length - 1].arrival_at, locale)}</span>
+          </p>
+        </div>
+        <div className="text-end shrink-0">
+          <p className="text-xl font-bold">{money(offer.price_total, currency, locale)}</p>
+          {isCheapest && <p className="text-xs text-sky-400 font-medium">{t("cheapest")}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PriceMatrix({ matrix }) {
+  const { t } = useLang();
+  if (!matrix.rows || !matrix.rows.length) return null;
+  return (
+    <div className="rounded-2xl bg-zinc-900/60 ring-1 ring-zinc-800 p-5">
+      <h3 className="font-semibold mb-1">{t("matrixTitle")}</h3>
+      <p className="text-sm text-zinc-500 mb-4">{t("matrixSub")}</p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="text-zinc-500 text-xs uppercase tracking-wider">
+              <th className="text-start font-medium py-2 pe-4">{t("ticketedTo")}</th>
+              {matrix.carriers.map((carrier) => (
+                <th key={carrier} className="text-end font-medium py-2 px-2 font-mono">{carrier}</th>
+              ))}
+              <th className="text-end font-medium py-2 ps-4">{t("best")}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800">
+            {matrix.rows.map((row) => (
+              <tr key={row.iata} className={row.is_target ? "bg-sky-500/10" : ""}>
+                <td className="py-2 pe-4 whitespace-nowrap">
+                  <span className="font-mono font-semibold">{row.iata}</span>
+                  <span className="text-zinc-500 ms-2">{row.city}</span>
+                  {row.is_target && (
+                    <span className="ms-2 text-[10px] uppercase tracking-wider text-sky-400 font-semibold">
+                      {t("yourTarget")}
+                    </span>
+                  )}
+                </td>
+                {row.prices.map((price, index) => (
+                  <td key={index} className={`text-end py-2 px-2 tabular-nums ${
+                    price == null ? "text-zinc-700" : price === row.cheapest ? "text-emerald-400 font-semibold" : "text-zinc-400"}`}>
+                    {price == null ? "--" : Math.round(price)}
+                  </td>
+                ))}
+                <td className="text-end py-2 ps-4 font-semibold tabular-nums">{Math.round(row.cheapest)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- app */
+
+function App() {
+  const [lang, setLang] = useState(() => localStorage.getItem(LANG_KEY)
+    || (navigator.language?.toLowerCase().startsWith("ar") ? "ar" : "en"));
+  const [health, setHealth] = useState(null);
+  const [disclaimer, setDisclaimer] = useState(null);
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const sourceRef = useRef(null);
+  const lastParams = useRef(null);
+
+  const dir = lang === "ar" ? "rtl" : "ltr";
+  const locale = lang === "ar" ? "ar-u-nu-latn" : "en";
+  const t = useCallback((key) => (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || key, [lang]);
+
+  // Direction lives on <html> so it cascades to native widgets too.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = dir;
+    localStorage.setItem(LANG_KEY, lang);
+  }, [lang, dir]);
+
+  useEffect(() => { fetch(`${API}/health`).then((r) => r.json()).then(setHealth).catch(() => {}); }, []);
+
+  useEffect(() => {
+    fetch(`${API}/disclaimer?lang=${lang}`).then((r) => r.json()).then((data) => {
+      setDisclaimer(data);
+      setAcknowledged(localStorage.getItem(ACK_KEY) === data.version);
+    }).catch(() => {});
+  }, [lang]);
+
+  const accept = useCallback(async (version) => {
+    localStorage.setItem(ACK_KEY, version);
+    setAcknowledged(true);
+    setShowModal(false);
+    let token = localStorage.getItem("hct.client.token");
+    if (!token) {
+      token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("hct.client.token", token);
+    }
+    fetch(`${API}/search/${(result && result.search_id) || "none"}/acknowledge`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ client_token: token, version }),
+    }).catch(() => {});
+  }, [result]);
+
+  const search = useCallback(async (form) => {
+    lastParams.current = form;
+    setBusy(true); setEvents([]); setResult(null); setError(null);
+    if (sourceRef.current) sourceRef.current.close();
+
+    try {
+      const response = await fetch(`${API}/search`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form),
+      });
+      if (!response.ok) {
+        const detail = await response.json().catch(() => ({}));
+        throw new Error((detail.detail && detail.detail[0] && detail.detail[0].msg) || detail.detail || "Search failed");
+      }
+      const { search_id } = await response.json();
+      const source = new EventSource(`${API}/search/${search_id}/events`);
+      sourceRef.current = source;
+
+      const handle = (event) => {
+        const payload = JSON.parse(event.data);
+        setEvents((previous) => [...previous, payload]);
+        if (payload.type === "complete") {
+          source.close();
+          fetch(`${API}/search/${search_id}`).then((r) => r.json()).then(setResult).finally(() => setBusy(false));
+        }
+        if (payload.type === "failed") {
+          source.close();
+          setError(payload.error || "The search failed.");
+          setBusy(false);
+        }
+      };
+      ["started", "baseline", "candidates", "probe_started", "probe_finished", "complete", "failed"]
+        .forEach((name) => source.addEventListener(name, handle));
+      source.onerror = () => { source.close(); setBusy(false); };
+    } catch (exception) {
+      setError(String(exception.message || exception));
+      setBusy(false);
+    }
+  }, []);
+
+  // Results are rendered server-side, so a language change re-runs the search.
+  // Offers are cached upstream, so this costs no provider API calls.
+  useEffect(() => {
+    const previous = lastParams.current;
+    if (!previous || previous.lang === lang || busy) return;
+    search({ ...previous, lang });
+  }, [lang, busy, search]);
+
+  const hidden = result && result.hidden_city;
+  const currency = result && result.baseline.currency;
+
+  return (
+    <LangContext.Provider value={{ lang, t, locale }}>
+      <div className="min-h-screen">
+        <header className="border-b border-zinc-800/80 sticky top-0 bg-zinc-950/80 backdrop-blur z-20">
+          <div className="mx-auto max-w-6xl px-4 py-4 flex items-center gap-4">
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold tracking-tight">{t("title")}</h1>
+              <p className="text-xs text-zinc-500 truncate">{t("subtitle")}</p>
+            </div>
+            <div className="ms-auto flex items-center gap-3 text-xs shrink-0">
+              {health && (
+                <span className={`px-2 py-1 rounded-full ring-1 ${
+                  health.provider_live ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/30"
+                                       : "bg-amber-500/10 text-amber-300 ring-amber-500/30"}`}>
+                  {health.provider_live ? t("live") : t("synthetic")}
+                </span>
+              )}
+              {/* Metered plans only: seeing the balance beats discovering it
+                  through a failed search. */}
+              {health && health.provider_quota_remaining != null && (
+                <span className={`px-2 py-1 rounded-full ring-1 tabular-nums ${
+                  health.provider_quota_remaining === 0
+                    ? "bg-rose-500/10 text-rose-300 ring-rose-500/30"
+                    : health.provider_quota_remaining <= 25
+                      ? "bg-amber-500/10 text-amber-300 ring-amber-500/30"
+                      : "bg-zinc-800 text-zinc-400 ring-zinc-700"}`}>
+                  {health.provider_quota_remaining === 0
+                    ? t("quotaEmpty")
+                    : t("quotaLeft").replace("{n}", health.provider_quota_remaining)}
+                </span>
+              )}
+              <button onClick={() => setShowModal(true)} className="text-zinc-400 hover:text-zinc-200 underline underline-offset-2">
+                {t("rules")}
+              </button>
+              <div className="flex items-center rounded-full ring-1 ring-zinc-700 overflow-hidden">
+                {[["en", "English"], ["ar", "العربية"]].map(([code, name]) => (
+                  <button key={code} onClick={() => setLang(code)}
+                    className={`px-2.5 py-1 transition ${lang === code
+                      ? "bg-zinc-100 text-zinc-900 font-semibold" : "text-zinc-400 hover:text-zinc-200"}`}>
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-6xl px-4 py-6 space-y-6">
+          <SearchForm onSearch={search} busy={busy} />
+
+          {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/5 text-rose-200 px-4 py-3">{error}</div>}
+
+          {busy && <Progress events={events} />}
+
+          {result && !busy && (
+            <>
+              {result.warnings.map((warning, index) => (
+                <div key={index} className="rounded-xl border border-amber-500/30 bg-amber-500/5 text-amber-200 px-4 py-3 text-sm">
+                  {warning}
+                </div>
+              ))}
+
+              <section>
+                <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                  <h2 className="text-xl font-bold">
+                    {hidden.count > 0
+                      ? `${hidden.count} ${hidden.count === 1 ? t("opportunity") : t("opportunities")}`
+                      : t("noneTitle")}
+                  </h2>
+                  {hidden.best_savings != null && (
+                    <p className="text-sm text-emerald-400 font-semibold">
+                      {t("bestSaving")} {money(hidden.best_savings, currency, locale)}
+                    </p>
+                  )}
+                </div>
+
+                {hidden.count === 0 ? (
+                  <div className="rounded-2xl bg-zinc-900/60 ring-1 ring-zinc-800 p-6 text-zinc-400">
+                    <p>{t("noneBody").replace("{city}", result.query.destination_airport.city)
+                        .replace("{n}", result.probes.length)}</p>
+                  </div>
+                ) : !acknowledged ? (
+                  <div className="rounded-2xl ring-1 ring-amber-500/30 bg-amber-500/5 p-6 text-center">
+                    <p className="text-3xl mb-2" aria-hidden="true">&#128274;</p>
+                    <p className="font-semibold text-amber-200">
+                      {t("lockedTitle").replace("{n}", hidden.count)
+                        .replace("{amount}", money(hidden.best_savings, currency, locale))}
+                    </p>
+                    <p className="text-sm text-zinc-400 mt-2 max-w-lg mx-auto">{t("lockedBody")}</p>
+                    <button onClick={() => setShowModal(true)}
+                      className="mt-4 rounded-lg bg-amber-500 hover:bg-amber-400 px-5 py-2.5 font-semibold text-zinc-950">
+                      {t("lockedButton")}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {hidden.options.map((option, index) => (
+                      <HiddenCityCard key={index} option={option} currency={currency} />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold mb-1">
+                  {t("standardTitle")} {result.query.destination_airport.city}
+                </h2>
+                <p className="text-sm text-zinc-500 mb-3">
+                  {t("standardSub")} {result.baseline.offer_count} {t("offers")} &middot;{" "}
+                  {money(result.baseline.price, currency, locale)}
+                </p>
+                <div className="space-y-2">
+                  {result.baseline.offers.slice(0, 6).map((offer, index) => (
+                    <StandardOffer key={index} offer={offer} currency={currency}
+                      isCheapest={offer.price_total === result.baseline.price} />
+                  ))}
+                </div>
+              </section>
+
+              <PriceMatrix matrix={result.price_matrix} />
+
+              <p className="text-xs text-zinc-600 pb-8">
+                {t("provider")}: {result.provider} &middot; {result.probes.length} {t("pricedIn")} {result.duration_ms} ms
+              </p>
+            </>
+          )}
+
+          {!result && !busy && !error && (
+            <p className="text-sm text-zinc-500 max-w-2xl">{t("intro")}</p>
+          )}
+        </main>
+
+        {showModal && disclaimer && (
+          <DisclaimerModal disclaimer={disclaimer} onAccept={accept} onDismiss={() => setShowModal(false)} />
+        )}
+      </div>
+    </LangContext.Provider>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

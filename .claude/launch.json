@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "backend/.venv/Scripts/python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--port", "8000", "--app-dir", "backend"],
+      "port": 8000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "C:\\Users\\mousa\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
+      "runtimeArgs": [
+        "frontend/node_modules/vite/bin/vite.js",
+        "frontend",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "port": 5173
+    }
+  ]
+}

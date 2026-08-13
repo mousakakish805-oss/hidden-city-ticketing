@@ -1,0 +1,73 @@
+# Full stack: API + PostgreSQL + Redis.
+#
+#   cp backend/.env.example .env   # then set DUFFEL_ACCESS_TOKEN
+#   docker compose up --build
+#   open http://localhost:8000
+#
+# Redis is only needed once you run more than one API worker -- the live
+# progress stream must reach a browser connected to a different worker than
+# the one running the search. It is included so scaling up is a config change,
+# not a re-architecture.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hidden_city}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hidden_city}
+      POSTGRES_DB: ${POSTGRES_DB:-hidden_city}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hidden_city}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: prod
+      DEBUG: "false"
+      # Migrations own the schema in production; create_all cannot alter a
+      # table that already exists.
+      AUTO_CREATE_SCHEMA: "false"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-hidden_city}:${POSTGRES_PASSWORD:-hidden_city}@postgres:5432/${POSTGRES_DB:-hidden_city}
+      REDIS_URL: redis://redis:6379/0
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+      # Same origin serves the API and the UI, so no cross-origin allowance.
+      CORS_ORIGINS: ""
+      FLIGHT_PROVIDER: ${FLIGHT_PROVIDER:-mock}
+      DUFFEL_ACCESS_TOKEN: ${DUFFEL_ACCESS_TOKEN:-}
+      AMADEUS_CLIENT_ID: ${AMADEUS_CLIENT_ID:-}
+      AMADEUS_CLIENT_SECRET: ${AMADEUS_CLIENT_SECRET:-}
+      AMADEUS_BASE_URL: ${AMADEUS_BASE_URL:-https://test.api.amadeus.com}
+      MAX_CANDIDATE_DESTINATIONS: ${MAX_CANDIDATE_DESTINATIONS:-12}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

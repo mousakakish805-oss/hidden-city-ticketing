@@ -1,0 +1,46 @@
+# Netlify hosts the WEBSITE only. The API cannot live here -- it is a
+# long-running Python server with a PostgreSQL database and a streaming
+# progress connection, none of which static hosting provides. Deploy the API
+# to Render (see render.yaml) and point the website at it.
+#
+# Two ways to publish:
+#
+#   Connected repo   Netlify -> Add new site -> Import an existing project.
+#                    This file configures the build automatically.
+#
+#   Drag and drop    Build locally, then drop `frontend/dist` onto
+#                    app.netlify.com/drop. This file is not used in that case,
+#                    so set VITE_API_BASE before building:
+#
+#                      cd frontend
+#                      VITE_API_BASE=https://your-api.onrender.com/api npm run build
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Point the website at the API on Render. Without this it would call
+  # /api on the Netlify domain, where nothing is listening.
+  # Set the real value in Netlify -> Site settings -> Environment variables.
+  VITE_API_BASE = "https://hidden-city.onrender.com/api"
+
+# The website uses hash routing (#/results, #/rules), so deep links resolve
+# client-side. This redirect is belt and braces for anyone who types a path.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    # Vite fingerprints these filenames, so they can be cached indefinitely.
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

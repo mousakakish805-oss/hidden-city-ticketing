@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Environment / secrets -- never commit API keys
+.env
+.env.*
+!.env.example
+
+# Local databases
+*.db
+*.sqlite3
+
+# Downloaded source data (regenerate with scripts/build_reference_data.py).
+# The *generated* datasets under app/data/generated/ ARE committed on purpose:
+# the app must work without network access.
+backend/.cache/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# Editors & OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Compiled frontend copied into the backend at image build time.
+backend/app/static/web/

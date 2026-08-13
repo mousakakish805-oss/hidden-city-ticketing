@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------- themes ---
+ * Two themes, switched at runtime by `data-theme` on <html>:
+ *
+ *   light  white surfaces, blue accent
+ *   dark   black surfaces, red accent
+ *
+ * Components never name a raw colour. They use semantic tokens -- `bg-surface`,
+ * `text-ink`, `bg-accent` -- so a theme is defined once here rather than in
+ * every file. `@theme inline` is what makes that work: the Tailwind utility
+ * resolves to `var(--…)` at runtime instead of baking a fixed value in, which
+ * is what lets the same class change colour when the attribute flips.
+ *
+ * `positive` stays green in both themes. Money saved reads as green
+ * regardless of the accent, and in the dark theme it also has to stay clearly
+ * distinct from a red accent that means "interactive".
+ */
+
+:root,
+:root[data-theme="light"] {
+  --canvas: #ffffff;
+  --surface: #f8fafc;
+  --surface-2: #f1f5f9;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+
+  --ink: #0f172a;
+  --ink-muted: #475569;
+  --ink-faint: #94a3b8;
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-ink: #ffffff;
+  --accent-soft: #eff6ff;
+  --accent-line: #bfdbfe;
+
+  --positive: #047857;
+  --positive-soft: #ecfdf5;
+  --positive-line: #a7f3d0;
+
+  --warning: #b45309;
+  --warning-soft: #fffbeb;
+  --warning-line: #fde68a;
+
+  --danger: #b91c1c;
+  --danger-soft: #fef2f2;
+  --danger-line: #fecaca;
+
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px rgb(15 23 42 / 0.06);
+}
+
+:root[data-theme="dark"] {
+  --canvas: #050505;
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  --line: #262626;
+  --line-strong: #3a3a3a;
+
+  --ink: #f5f5f5;
+  --ink-muted: #a3a3a3;
+  --ink-faint: #6b6b6b;
+
+  --accent: #e11d48;
+  --accent-hover: #f43f5e;
+  --accent-ink: #ffffff;
+  --accent-soft: #2a0d13;
+  --accent-line: #7f1d2e;
+
+  --positive: #34d399;
+  --positive-soft: #0c231b;
+  --positive-line: #16543c;
+
+  --warning: #fbbf24;
+  --warning-soft: #2a1f06;
+  --warning-line: #78500d;
+
+  /* Deliberately orange-leaning so a critical alert stays distinguishable
+     from the red accent used for ordinary buttons. */
+  --danger: #fb7185;
+  --danger-soft: #2d0f15;
+  --danger-line: #86202f;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.6), 0 8px 24px rgb(0 0 0 / 0.5);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-positive-line: var(--positive-line);
+
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-line: var(--warning-line);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-line: var(--danger-line);
+
+  --animate-fade-up: fade-up 0.25s ease-out both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Native widgets (date pickers, selects, scrollbars) follow the theme. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Respect the OS setting until the visitor picks a theme themselves. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
