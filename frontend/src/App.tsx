@@ -42,6 +42,15 @@ export default function App() {
     [search, navigate],
   );
 
+  // Most failures here are worth simply re-running: a quota resets, a dropped
+  // connection comes back, a sleeping server wakes. Sending someone back to
+  // re-type a route they already typed is the wrong response to "try again
+  // later", so the error state offers the retry rather than a blank form.
+  const retrySearch = useCallback(() => {
+    const previous = lastParams.current;
+    if (previous) search({ ...previous, lang });
+  }, [search, lang]);
+
   // Results are rendered server-side, so switching language has to re-run the
   // search. Offers are cached upstream, so this costs no provider API calls.
   useEffect(() => {
@@ -178,14 +187,26 @@ export default function App() {
             )}
 
             {(result || error) && !busy && (
-              <button
-                type="button"
-                onClick={() => navigate("search")}
-                className="rounded-lg ring-1 ring-line-strong px-5 py-2.5 text-sm font-semibold
-                           text-ink-muted hover:text-ink transition"
-              >
-                {t("nav.newSearch")}
-              </button>
+              <div className="flex flex-wrap gap-3">
+                {error && (
+                  <button
+                    type="button"
+                    onClick={retrySearch}
+                    className="rounded-lg bg-accent hover:bg-accent-hover px-5 py-2.5 text-sm
+                               font-semibold text-accent-ink transition"
+                  >
+                    {t("nav.searchAgain")}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => navigate("search")}
+                  className="rounded-lg ring-1 ring-line-strong px-5 py-2.5 text-sm font-semibold
+                             text-ink-muted hover:text-ink transition"
+                >
+                  {error ? t("nav.changeSearch") : t("nav.newSearch")}
+                </button>
+              </div>
             )}
           </>
         )}

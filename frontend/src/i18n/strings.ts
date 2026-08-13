@@ -154,6 +154,8 @@ const en = {
   "nav.results": "Results",
   "nav.rules": "Rules & risks",
   "nav.newSearch": "New search",
+  "nav.searchAgain": "Search again",
+  "nav.changeSearch": "Change the search",
   "nav.backToResults": "Back to results",
 
   "rules.loading": "Loading the rules…",
@@ -317,6 +319,8 @@ const ar: Record<StringKey, string> = {
   "nav.results": "النتائج",
   "nav.rules": "القواعد والمخاطر",
   "nav.newSearch": "بحث جديد",
+  "nav.searchAgain": "أعد البحث",
+  "nav.changeSearch": "تعديل البحث",
   "nav.backToResults": "العودة إلى النتائج",
 
   "rules.loading": "جارٍ تحميل القواعد…",
