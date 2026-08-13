@@ -62,11 +62,21 @@ services:
         sync: false
 
       # --- Cost control ----------------------------------------------------
-      # Each candidate is one upstream API call, and the Sky Scrapper listing
-      # needs a retry per search, so the real cost is roughly
+      # Each candidate is one upstream API call, plus one for the baseline
+      # A -> B market, and the Sky Scrapper listing returns a fragment on the
+      # first call so every search is issued twice. The real cost is roughly
       #   (MAX_CANDIDATE_DESTINATIONS + 1) x 2
+      #
+      # Set to 2 -- about 6 requests per search -- because the current RapidAPI
+      # plan allows 20 requests A MONTH. At the previous 4 that was two
+      # searches; this is three.
+      #
+      # This is a quota decision, not a quality one. Fewer candidates means
+      # fewer cities checked beyond the destination, and every city dropped is
+      # an anomaly that cannot be found. Raise it the moment the plan allows:
+      # 8-12 is where the search actually does its job.
       - key: MAX_CANDIDATE_DESTINATIONS
-        value: "4"
+        value: "2"
       - key: OFFER_CACHE_TTL_SECONDS
         value: "21600"
       - key: PROVIDER_CONCURRENCY
