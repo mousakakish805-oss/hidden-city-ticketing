@@ -5,18 +5,11 @@ import { LegSection } from "./LegSection";
 
 interface Props {
   result: SearchResult;
-  /** Provider is the mock: every figure below is generated, not real. */
-  syntheticData: boolean;
   disclaimerAccepted: boolean;
   onOpenDisclaimer: () => void;
 }
 
-export function ResultsPanel({
-  result,
-  syntheticData,
-  disclaimerAccepted,
-  onOpenDisclaimer,
-}: Props) {
+export function ResultsPanel({ result, disclaimerAccepted, onOpenDisclaimer }: Props) {
   const { t, locale } = useI18n();
   const isRoundTrip = result.trip_type === "round_trip" && result.inbound !== null;
   const totals = result.totals;
@@ -81,7 +74,6 @@ export function ResultsPanel({
       <LegSection
         leg={result.outbound}
         showHeading={isRoundTrip}
-        syntheticData={syntheticData}
         disclaimerAccepted={disclaimerAccepted}
         onOpenDisclaimer={onOpenDisclaimer}
       />
@@ -90,7 +82,6 @@ export function ResultsPanel({
         <LegSection
           leg={result.inbound}
           showHeading
-          syntheticData={syntheticData}
           disclaimerAccepted={disclaimerAccepted}
           onOpenDisclaimer={onOpenDisclaimer}
         />

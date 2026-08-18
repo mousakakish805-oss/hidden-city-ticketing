@@ -10,14 +10,13 @@ import { SegmentTimeline } from "./SegmentTimeline";
 interface Props {
   option: HiddenCityOption;
   currency: string;
-  syntheticData: boolean;
 }
 
 /**
  * The headline result: what to book, where to get off, and what it costs you
  * in risk to save the money.
  */
-export function HiddenCityCard({ option, currency, syntheticData }: Props) {
+export function HiddenCityCard({ option, currency }: Props) {
   const { t, locale } = useI18n();
   const [showAllFlags, setShowAllFlags] = useState(false);
   const itinerary = option.offer.itineraries[0];
@@ -147,7 +146,7 @@ export function HiddenCityCard({ option, currency, syntheticData }: Props) {
         </div>
       </dl>
 
-      <BookingPanel booking={option.booking} syntheticData={syntheticData} />
+      <BookingPanel booking={option.booking} />
 
       <div className="mt-4 space-y-2">
         {visibleFlags.map((flag) => (
