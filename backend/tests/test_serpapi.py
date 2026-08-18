@@ -215,6 +215,49 @@ async def test_a_spent_plan_says_so_instead_of_retrying() -> None:
 
 
 @pytest.mark.asyncio
+async def test_an_unpriced_offer_is_skipped_without_a_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Observed on the very first live search against AMM -> IST.
+
+    Google returns itineraries it will not quote a price for. There is nothing
+    wrong with the payload and nothing this tool can do with the flight, so it
+    goes quietly -- warning about it would fire on essentially every search and
+    train the reader to ignore the log.
+    """
+    payload = {
+        "best_flights": [
+            {"flights": TWO_LEG_RESPONSE["best_flights"][0]["flights"]},  # no price
+            TWO_LEG_RESPONSE["best_flights"][0],
+        ]
+    }
+    provider = provider_returning(payload)
+    with caplog.at_level("WARNING"):
+        offers = await provider.search(REQUEST)
+    await provider.aclose()
+
+    assert [offer.price_total for offer in offers] == [159.0]
+    assert caplog.records == []
+
+
+@pytest.mark.asyncio
+async def test_a_malformed_offer_still_warns(caplog: pytest.LogCaptureFixture) -> None:
+    """A price that is not a number is a real problem, and must be visible."""
+    payload = {
+        "best_flights": [
+            {"flights": TWO_LEG_RESPONSE["best_flights"][0]["flights"], "price": "free"}
+        ]
+    }
+    provider = provider_returning(payload)
+    with caplog.at_level("WARNING"):
+        offers = await provider.search(REQUEST)
+    await provider.aclose()
+
+    assert offers == []
+    assert any("malformed" in record.message for record in caplog.records)
+
+
+@pytest.mark.asyncio
 async def test_unparseable_offers_are_skipped_not_fatal() -> None:
     payload = {
         "best_flights": [

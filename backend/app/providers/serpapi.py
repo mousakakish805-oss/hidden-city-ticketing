@@ -262,13 +262,24 @@ class SerpApiProvider:
     def _parse_offer(
         self, raw: dict[str, Any], request: SearchRequest, fallback_id: str
     ) -> Offer | None:
+        # Google routinely returns itineraries it will not quote a price for.
+        # That is not a malformed payload -- it is a flight this tool has
+        # nothing to say about, since the whole product is price comparison.
+        # Warning about it would cry wolf on every single search.
+        if raw.get("price") is None:
+            logger.debug("SerpApi offer has no price; skipping it.")
+            return None
+
         try:
             segments = tuple(self._parse_segment(leg) for leg in raw["flights"])
             if not segments:
                 return None
             price = float(raw["price"])
         except (KeyError, TypeError, ValueError) as exc:
-            logger.warning("Skipping unparseable SerpApi offer: %s", exc)
+            # Anything reaching here is genuinely wrong -- a missing leg, an
+            # unreadable timestamp, a price that is not a number -- and is
+            # worth seeing in the log.
+            logger.warning("Skipping malformed SerpApi offer: %s", exc)
             return None
 
         # Trust the reported total; naive local times cannot produce it across
