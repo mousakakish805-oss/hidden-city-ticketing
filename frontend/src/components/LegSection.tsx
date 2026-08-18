@@ -9,12 +9,19 @@ interface Props {
   leg: LegResult;
   /** Only shown for return trips; a one-way needs no direction heading. */
   showHeading: boolean;
+  syntheticData: boolean;
   disclaimerAccepted: boolean;
   onOpenDisclaimer: () => void;
 }
 
 /** One direction of a trip: its savings, its normal fares, its price matrix. */
-export function LegSection({ leg, showHeading, disclaimerAccepted, onOpenDisclaimer }: Props) {
+export function LegSection({
+  leg,
+  showHeading,
+  syntheticData,
+  disclaimerAccepted,
+  onOpenDisclaimer,
+}: Props) {
   const { t, locale } = useI18n();
   const { hidden_city: hidden, baseline } = leg;
   const currency = baseline.currency;
@@ -96,6 +103,7 @@ export function LegSection({ leg, showHeading, disclaimerAccepted, onOpenDisclai
                 key={`${option.ticketed_iata}-${option.offer.offer_id}`}
                 option={option}
                 currency={currency}
+                syntheticData={syntheticData}
               />
             ))}
           </div>

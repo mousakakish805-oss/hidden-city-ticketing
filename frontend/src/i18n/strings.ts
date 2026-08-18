@@ -22,6 +22,13 @@ const en = {
   "header.rules": "Rules & risks",
   "header.live": "live fares",
   "header.synthetic": "test data",
+  "synthetic.title": "These are not real prices",
+  "synthetic.body":
+    "This website is running on generated test data. Every price, flight number, " +
+    "airline and departure time below was invented by the software — none of it " +
+    "was checked against any airline. Flights shown here may not exist at all. " +
+    "Do not use these figures to plan or book a trip.",
+  "synthetic.booking": "Test figure. Check the real price on the airline's own site.",
   "header.liveHint": "Live fares from {provider}",
   "header.syntheticHint": "Synthetic fares. Add provider credentials for live pricing.",
   "header.language": "Language",
@@ -189,6 +196,13 @@ const ar: Record<StringKey, string> = {
   "header.rules": "القواعد والمخاطر",
   "header.live": "أسعار حقيقية",
   "header.synthetic": "بيانات تجريبية",
+  "synthetic.title": "هذه ليست أسعاراً حقيقية",
+  "synthetic.body":
+    "يعمل هذا الموقع حالياً على بيانات تجريبية مُولَّدة. كل سعر ورقم رحلة وشركة " +
+    "طيران وموعد إقلاع في الأسفل من إنشاء البرنامج، ولم يُراجَع أي منها لدى أي " +
+    "شركة طيران. وقد لا تكون الرحلات المعروضة هنا موجودة أصلاً. لا تعتمد على هذه " +
+    "الأرقام في التخطيط لرحلة أو حجزها.",
+  "synthetic.booking": "رقم تجريبي. تحقّق من السعر الحقيقي على موقع شركة الطيران.",
   "header.liveHint": "أسعار حقيقية من {provider}",
   "header.syntheticHint": "أسعار تجريبية. أضف بيانات اعتماد المزوّد للحصول على أسعار حقيقية.",
   "header.language": "اللغة",

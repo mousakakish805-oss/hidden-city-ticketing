@@ -11,7 +11,13 @@ import type { BookingGuidance } from "../types";
  *
  * This app never books anything; it only reports prices.
  */
-export function BookingPanel({ booking }: { booking: BookingGuidance }) {
+export function BookingPanel({
+  booking,
+  syntheticData,
+}: {
+  booking: BookingGuidance;
+  syntheticData: boolean;
+}) {
   const { t } = useI18n();
 
   return (
@@ -24,6 +30,13 @@ export function BookingPanel({ booking }: { booking: BookingGuidance }) {
           <p className="text-sm text-ink-muted">{booking.instructions}</p>
           {booking.note && <p className="text-sm text-warning mt-1">{booking.note}</p>}
           <p className="text-xs text-ink-faint mt-1.5">{t("booking.note")}</p>
+          {/* The airline link invites a price comparison, which is exactly
+              how the generated figures get mistaken for real ones. */}
+          {syntheticData && (
+            <p className="text-xs font-semibold text-warning mt-1.5">
+              {t("synthetic.booking")}
+            </p>
+          )}
         </div>
 
         {booking.url && (

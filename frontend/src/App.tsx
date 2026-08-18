@@ -178,9 +178,25 @@ export default function App() {
 
             {busy && <BatchProgress events={events} />}
 
+            {/* A chip in the header is not proportionate warning for a page
+                full of prices, savings percentages and confidence scores. On
+                synthetic data every one of those numbers is invented, and the
+                only way anyone found that out was by opening the airline's own
+                site and comparing. Say it where the numbers are. */}
+            {result && !busy && health && !health.provider_live && (
+              <div
+                role="alert"
+                className="rounded-xl bg-warning-soft ring-1 ring-warning-line px-4 py-3"
+              >
+                <p className="font-semibold text-warning">{t("synthetic.title")}</p>
+                <p className="text-sm text-warning/90 mt-1">{t("synthetic.body")}</p>
+              </div>
+            )}
+
             {result && !busy && (
               <ResultsPanel
                 result={result}
+                syntheticData={health ? !health.provider_live : false}
                 disclaimerAccepted={accepted}
                 onOpenDisclaimer={() => navigate("rules")}
               />
