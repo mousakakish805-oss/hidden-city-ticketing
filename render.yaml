@@ -54,8 +54,26 @@ services:
       # --- Flight data -----------------------------------------------------
       # Set these in the Render dashboard, NOT here. Anything written in this
       # file is committed to the repository.
+      #
+      # Only the group matching FLIGHT_PROVIDER needs values; the rest can stay
+      # empty. Switching provider is FLIGHT_PROVIDER plus that group's keys.
       - key: FLIGHT_PROVIDER
         sync: false
+
+      # amadeus -- developers.amadeus.com -> My Self-Service Workspace
+      # AMADEUS_BASE_URL selects the environment and matters more than it looks:
+      #   https://test.api.amadeus.com  free, but a limited cached subset of
+      #                                 real data, so many routes return nothing
+      #   https://api.amadeus.com       real live fares; requires moving the app
+      #                                 to production in the portal
+      - key: AMADEUS_CLIENT_ID
+        sync: false
+      - key: AMADEUS_CLIENT_SECRET
+        sync: false
+      - key: AMADEUS_BASE_URL
+        sync: false
+
+      # rapidapi -- sky-scrapper.p.rapidapi.com
       - key: RAPIDAPI_KEY
         sync: false
       - key: RAPIDAPI_HOST

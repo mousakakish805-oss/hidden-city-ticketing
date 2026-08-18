@@ -170,6 +170,11 @@ class HealthOut(BaseModel):
     # Requests left on a metered plan, as last reported by the provider.
     # None means the provider does not publish one (or has not been called yet).
     provider_quota_remaining: int | None = None
+    # How many markets beyond the destination each search prices. It drives
+    # both the cost of a search -- roughly (n + 1) x 2 upstream calls -- and
+    # how much of the anomaly space gets explored, so it is the one setting
+    # worth being able to read back from a running deployment.
+    max_candidate_destinations: int
     database: str
     database_reachable: bool
     disclaimer_version: str

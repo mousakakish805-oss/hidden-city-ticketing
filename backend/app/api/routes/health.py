@@ -42,6 +42,7 @@ async def health(session: SessionDep, provider: ProviderDep) -> HealthOut:
         provider=provider.name,
         provider_live=provider_live,
         provider_quota_remaining=quota,
+        max_candidate_destinations=settings.max_candidate_destinations,
         database="postgresql" if settings.is_postgres else "sqlite",
         database_reachable=database_reachable,
         disclaimer_version=settings.disclaimer_version,
