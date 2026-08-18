@@ -73,6 +73,12 @@ services:
       - key: AMADEUS_BASE_URL
         sync: false
 
+      # serpapi -- serpapi.com/manage-api-key, fronting Google Flights.
+      # Published fares, no sandbox mode, and one search per market with no
+      # retry tax -- so a user query costs MAX_CANDIDATE_DESTINATIONS + 1.
+      - key: SERPAPI_KEY
+        sync: false
+
       # rapidapi -- sky-scrapper.p.rapidapi.com
       - key: RAPIDAPI_KEY
         sync: false
@@ -80,19 +86,20 @@ services:
         sync: false
 
       # --- Cost control ----------------------------------------------------
-      # Each candidate is one upstream API call, plus one for the baseline
-      # A -> B market, and the Sky Scrapper listing returns a fragment on the
-      # first call so every search is issued twice. The real cost is roughly
-      #   (MAX_CANDIDATE_DESTINATIONS + 1) x 2
+      # One upstream call per candidate, plus one for the baseline A -> B
+      # market. What that costs depends on the provider:
       #
-      # Set to 2 -- about 6 requests per search -- because the current RapidAPI
-      # plan allows 20 requests A MONTH. At the previous 4 that was two
-      # searches; this is three.
+      #   serpapi   (MAX_CANDIDATE_DESTINATIONS + 1)      complete first time
+      #   rapidapi  (MAX_CANDIDATE_DESTINATIONS + 1) x 2  first reply is a
+      #                                                   fragment, so retried
       #
-      # This is a quota decision, not a quality one. Fewer candidates means
-      # fewer cities checked beyond the destination, and every city dropped is
-      # an anomaly that cannot be found. Raise it the moment the plan allows:
-      # 8-12 is where the search actually does its job.
+      # Against monthly allowances of 250 (SerpApi free) and 20 (RapidAPI
+      # free), a value of 2 buys roughly 83 searches on the first and 3 on the
+      # second. It was set to 2 for the RapidAPI plan.
+      #
+      # Fewer candidates is a budget decision, never a better search: each city
+      # dropped is an anomaly that cannot be found. 8-12 is where this works
+      # properly, and on 250/month even 4 leaves ~50 searches.
       - key: MAX_CANDIDATE_DESTINATIONS
         value: "2"
       - key: OFFER_CACHE_TTL_SECONDS

@@ -20,7 +20,16 @@ from app.providers.base import ProviderError
 
 # Matched case-insensitively against the exception text, best-fit first.
 _SIGNATURES: tuple[tuple[tuple[str, ...], str], ...] = (
-    (("quota is exhausted", "quota exhausted", "0 requests remaining"), "error.quota"),
+    (
+        (
+            "quota is exhausted",
+            "quota exhausted",
+            "plan is exhausted",
+            "ran out of searches",
+            "0 requests remaining",
+        ),
+        "error.quota",
+    ),
     (("rate limited", "too many requests"), "error.busy"),
     (("no flights found",), "error.noFlights"),
     (("token", "credentials", "unauthorized", "not subscribed", "api key"), "error.misconfigured"),

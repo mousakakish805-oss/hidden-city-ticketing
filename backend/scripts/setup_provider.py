@@ -10,6 +10,7 @@ which is git-ignored, and only a masked prefix is printed back.
 Where to get credentials:
     Duffel   https://app.duffel.com  ->  Developers  ->  Access tokens
     Amadeus  https://developers.amadeus.com  ->  Self-Service  ->  create an app
+    SerpApi  https://serpapi.com/manage-api-key
 """
 
 from __future__ import annotations
@@ -130,6 +131,22 @@ def collect_duffel(existing: dict[str, str]) -> dict[str, str]:
     return {"FLIGHT_PROVIDER": "duffel", "DUFFEL_ACCESS_TOKEN": token}
 
 
+def collect_serpapi(existing: dict[str, str]) -> dict[str, str]:
+    print("SerpApi key (Google Flights)")
+    print("  Portal: https://serpapi.com/manage-api-key")
+    print("  Fares come from Google Flights, so they are the published ones.")
+    print("  There is no sandbox mode to fall into.")
+    if existing.get("SERPAPI_KEY"):
+        print(f"  Existing key on file: {mask(existing['SERPAPI_KEY'])}")
+    print()
+
+    key = getpass("API key (hidden as you type): ").strip()
+    if not key:
+        raise SystemExit("No key entered. Nothing was written.")
+
+    return {"FLIGHT_PROVIDER": "serpapi", "SERPAPI_KEY": key}
+
+
 def collect_amadeus(existing: dict[str, str], production: bool) -> dict[str, str]:
     base_url = "https://api.amadeus.com" if production else "https://test.api.amadeus.com"
     print("Amadeus Self-Service credentials")
@@ -199,7 +216,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "provider",
-        choices=("rapidapi", "duffel", "amadeus"),
+        choices=("rapidapi", "duffel", "amadeus", "serpapi"),
         help="Which provider to set up",
     )
     parser.add_argument(
@@ -229,6 +246,7 @@ def main() -> int:
             "rapidapi": lambda: collect_rapidapi(existing),
             "duffel": lambda: collect_duffel(existing),
             "amadeus": lambda: collect_amadeus(existing, args.production),
+            "serpapi": lambda: collect_serpapi(existing),
         }
         updates = collectors[args.provider]()
         write_env(updates)

@@ -25,6 +25,8 @@ FORBIDDEN = (
     "rapidapi",
     "duffel",
     "amadeus",
+    "serpapi",
+    "google flights",
     "flight_provider",
     "searchfailed",
     "providererror",
@@ -43,6 +45,11 @@ REAL_FAILURES = [
     ),
     ProviderError("RapidAPI rate limited the request (HTTP 429)"),
     ProviderError("Duffel rejected the token: unauthorized"),
+    ProviderError(
+        "SerpApi plan is exhausted: You've ran out of searches for this month. "
+        "Wait for the plan to reset, or upgrade it on the SerpApi dashboard."
+    ),
+    ProviderError("SerpApi rejected the api key (401). Check SERPAPI_KEY."),
     ProviderError("httpx transport error: connection timed out"),
     RuntimeError("No flights found for AMM->IST on 2026-09-01."),
     ValueError("something nobody predicted"),

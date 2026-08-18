@@ -73,10 +73,31 @@ def _build_rapidapi() -> FlightProvider:
     return provider
 
 
+def _build_serpapi() -> FlightProvider:
+    if not settings.serpapi_configured:
+        logger.warning(
+            "FLIGHT_PROVIDER=serpapi but SERPAPI_KEY is missing; falling back to the mock provider."
+        )
+        return MockFlightProvider()
+
+    from app.providers.serpapi import SerpApiProvider
+
+    provider = SerpApiProvider()
+    # One call per market, with no retry tax: SerpApi returns a complete
+    # result first time, unlike listings that answer with a fragment.
+    logger.info(
+        "SerpApi ready | ~%d searches per user query (1 baseline + %d candidates)",
+        settings.max_candidate_destinations + 1,
+        settings.max_candidate_destinations,
+    )
+    return provider
+
+
 BUILDERS = {
     "amadeus": _build_amadeus,
     "duffel": _build_duffel,
     "rapidapi": _build_rapidapi,
+    "serpapi": _build_serpapi,
 }
 
 

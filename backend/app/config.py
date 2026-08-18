@@ -15,7 +15,7 @@ from typing import Annotated, Literal
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
-ProviderName = Literal["mock", "amadeus", "duffel", "rapidapi"]
+ProviderName = Literal["mock", "amadeus", "duffel", "rapidapi", "serpapi"]
 
 # app/config.py -> app -> backend
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -84,6 +84,15 @@ class Settings(BaseSettings):
     duffel_access_token: str | None = None
     duffel_base_url: str = "https://api.duffel.com"
     duffel_api_version: str = "v2"
+
+    # SerpApi fronts Google Flights, so the fares are the published ones a
+    # traveller would see -- there is no sandbox mode to fall into.
+    serpapi_key: str | None = None
+    serpapi_base_url: str = "https://serpapi.com"
+    # `deep_search` makes SerpApi reproduce the Google Flights page exactly, at
+    # the cost of a slower response. Left off because a search fans out to
+    # several of these under one deadline; turn it on if results look thin.
+    serpapi_deep_search: bool = False
 
     # RapidAPI is a marketplace: one key, many APIs. The key authenticates you,
     # the host selects which listing you are calling, and each listing has its
@@ -191,7 +200,9 @@ class Settings(BaseSettings):
         if url.startswith(prefix):
             path = url[len(prefix) :]
             # ":memory:" and absolute paths are already unambiguous.
-            if path.startswith("./") or (path and not Path(path).is_absolute() and path != ":memory:"):
+            if path.startswith("./") or (
+                path and not Path(path).is_absolute() and path != ":memory:"
+            ):
                 resolved = (BACKEND_DIR / path.removeprefix("./")).resolve()
                 url = f"{prefix}{resolved.as_posix()}"
         return url
@@ -211,6 +222,10 @@ class Settings(BaseSettings):
     @property
     def rapidapi_configured(self) -> bool:
         return bool(self.rapidapi_key and self.rapidapi_host)
+
+    @property
+    def serpapi_configured(self) -> bool:
+        return bool(self.serpapi_key)
 
 
 @lru_cache
