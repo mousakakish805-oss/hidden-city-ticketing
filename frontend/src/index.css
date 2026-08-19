@@ -113,7 +113,13 @@
   --color-danger-soft: var(--danger-soft);
   --color-danger-line: var(--danger-line);
 
-  --animate-fade-up: fade-up 0.25s ease-out both;
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-rise: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-drift: drift 22s ease-in-out infinite alternate;
+  --animate-sweep: sweep 1.6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 1.8s ease-out infinite;
 }
 
 @keyframes fade-up {
@@ -125,6 +131,111 @@
     opacity: 1;
     transform: none;
   }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Further and slower than fade-up: for things arriving as a page, not as a
+   detail inside one. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The two colour fields behind the landing hero. Slow and low-contrast on
+   purpose -- it should read as depth, not as something demanding attention
+   while someone is typing an airport code. */
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, -6%, 0) scale(1.12);
+  }
+}
+
+/* Travels along the progress bar while the batch engine works. */
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes pulse-ring {
+  from {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+/* Children arrive one after another rather than all at once. Depth is capped
+   at eight: past that the last card waits long enough to feel broken. */
+.stagger > * {
+  animation: var(--animate-fade-up);
+}
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.17s; }
+.stagger > *:nth-child(5) { animation-delay: 0.22s; }
+.stagger > *:nth-child(6) { animation-delay: 0.27s; }
+.stagger > *:nth-child(7) { animation-delay: 0.32s; }
+.stagger > *:nth-child(n + 8) { animation-delay: 0.36s; }
+
+/* Frosted panel over the drifting background. The fallback matters: without
+   it, a browser lacking backdrop-filter renders text on bare gradient. */
+.glass {
+  background-color: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 60%, transparent);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .glass {
+    background-color: color-mix(in srgb, var(--surface) 62%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+}
+
+/* Lift on hover, for things that are actually clickable. */
+.lift {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
 }
 
 body {
@@ -141,12 +252,17 @@ body {
   color-scheme: dark;
 }
 
-/* Respect the OS setting until the visitor picks a theme themselves. */
+/* Motion is decoration here; nothing in this interface depends on it to be
+   understood. Anyone who has asked their system for less gets none of it.
+   The iteration count matters as much as the duration: a looping animation
+   left at 0.01ms would still run, just imperceptibly fast and forever. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

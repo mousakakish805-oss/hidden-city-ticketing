@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { Backdrop } from "./components/Backdrop";
 import { BatchProgress } from "./components/BatchProgress";
 import { DisclaimerModal } from "./components/DisclaimerModal";
 import { LanguageToggle } from "./components/LanguageToggle";
@@ -67,33 +68,60 @@ export default function App() {
     if (route === "results" && !result && !busy && !error) navigate("search");
   }, [route, result, busy, error, navigate]);
 
-  const navItems = [
-    { key: "search" as const, label: t("nav.search") },
-    { key: "results" as const, label: t("nav.results"), disabled: !result && !busy },
-    { key: "rules" as const, label: t("nav.rules") },
-  ];
+  const onLanding = route === "search";
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-line sticky top-0 bg-canvas/85 backdrop-blur z-20">
-        <div className="mx-auto max-w-6xl px-4 pt-3 pb-2 flex items-center gap-4">
+    <div className="min-h-screen flex flex-col">
+      {/* Only behind the landing page. Over a page of prices and warnings it
+          would be decoration competing with information. */}
+      {onLanding && <Backdrop />}
+
+      <header className="sticky top-0 z-20">
+        <div
+          className={`mx-auto max-w-6xl m-3 rounded-2xl px-4 py-2.5 flex items-center gap-3
+                      glass ${onLanding ? "" : "shadow-[var(--shadow)]"}`}
+        >
           <button
             type="button"
             onClick={() => navigate("search")}
-            className="min-w-0 text-start"
+            className="min-w-0 text-start group"
           >
-            <h1 className="text-lg font-bold tracking-tight">{t("app.title")}</h1>
-            <p className="text-xs text-ink-faint truncate">
-              {t("app.subtitle")}
-              {coverage &&
-                ` · ${t("app.coverage", {
-                  airports: number(coverage.airports, locale),
-                  countries: number(coverage.countries, locale),
-                })}`}
+            <h1 className="text-base font-bold tracking-tight flex items-center gap-2">
+              <span
+                aria-hidden
+                className="inline-block h-2 w-2 rounded-full bg-accent
+                           transition-transform group-hover:scale-150"
+              />
+              {t("app.title")}
+            </h1>
+            <p className="text-[11px] text-ink-faint truncate">
+              {coverage
+                ? t("app.coverage", {
+                    airports: number(coverage.airports, locale),
+                    countries: number(coverage.countries, locale),
+                  })
+                : t("app.subtitle")}
             </p>
           </button>
 
-          <div className="ms-auto flex items-center gap-2.5 text-xs shrink-0">
+          <div className="ms-auto flex items-center gap-2 text-xs shrink-0">
+            {/* Rules live one click from every page. They are the difference
+                between saving money and losing a ticket, so they are not
+                buried behind a results page someone may never reach. */}
+            <button
+              type="button"
+              onClick={() => navigate("rules")}
+              aria-current={route === "rules" ? "page" : undefined}
+              className={`rounded-full px-3 py-1.5 font-semibold ring-1 transition lift
+                          ${
+                            route === "rules"
+                              ? "bg-accent text-accent-ink ring-accent"
+                              : "ring-line-strong text-ink-muted hover:text-ink"
+                          }`}
+            >
+              {t("header.rules")}
+            </button>
+
             {health && (
               <span
                 title={
@@ -101,12 +129,18 @@ export default function App() {
                     ? t("header.liveHint", { provider: health.provider })
                     : t("header.syntheticHint")
                 }
-                className={`px-2 py-1 rounded-full ring-1 ${
+                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ring-1 ${
                   health.provider_live
                     ? "bg-positive-soft text-positive ring-positive-line"
                     : "bg-warning-soft text-warning ring-warning-line"
                 }`}
               >
+                {health.provider_live && (
+                  <span aria-hidden className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inset-0 rounded-full bg-positive animate-pulse-ring" />
+                    <span className="relative h-1.5 w-1.5 rounded-full bg-positive" />
+                  </span>
+                )}
                 {health.provider_live ? t("header.live") : t("header.synthetic")}
               </span>
             )}
@@ -120,7 +154,7 @@ export default function App() {
                     ? t("header.quotaEmptyHint")
                     : t("header.quotaHint", { count: health.provider_quota_remaining })
                 }
-                className={`px-2 py-1 rounded-full ring-1 tabular-nums ${
+                className={`hidden sm:inline px-2.5 py-1 rounded-full ring-1 tabular-nums ${
                   health.provider_quota_remaining === 0
                     ? "bg-danger-soft text-danger ring-danger-line"
                     : health.provider_quota_remaining <= 25
@@ -138,40 +172,56 @@ export default function App() {
             <LanguageToggle />
           </div>
         </div>
-
-        <nav className="mx-auto max-w-6xl px-4 flex gap-1 text-sm">
-          {navItems.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              disabled={item.disabled}
-              onClick={() => navigate(item.key)}
-              aria-current={route === item.key ? "page" : undefined}
-              className={`px-3 py-2 -mb-px border-b-2 transition disabled:opacity-40
-                          disabled:cursor-not-allowed ${
-                            route === item.key
-                              ? "border-accent text-ink font-semibold"
-                              : "border-transparent text-ink-muted hover:text-ink"
-                          }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 space-y-6">
+      <main className="flex-1 mx-auto w-full max-w-6xl px-4 pb-16">
         {route === "search" && (
-          <>
-            <SearchForm busy={busy} onSearch={runSearch} />
-            <p className="text-sm text-ink-faint max-w-2xl">{t("empty.intro")}</p>
-          </>
+          <section key="landing" className="animate-rise pt-10 sm:pt-16">
+            <div className="max-w-3xl">
+              <p
+                className="inline-flex items-center gap-2 rounded-full bg-accent-soft text-accent
+                           ring-1 ring-accent-line px-3 py-1 text-xs font-semibold animate-pop"
+              >
+                {t("hero.eyebrow")}
+              </p>
+              <h2 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1]">
+                {t("hero.title")}
+              </h2>
+              <p className="mt-4 text-base sm:text-lg text-ink-muted leading-relaxed">
+                {t("hero.body")}
+              </p>
+            </div>
+
+            <div className="mt-8">
+              <SearchForm busy={busy} onSearch={runSearch} />
+            </div>
+
+            <ol className="stagger mt-10 grid gap-4 sm:grid-cols-3">
+              {(["one", "two", "three"] as const).map((step, index) => (
+                <li key={step} className="rounded-2xl glass p-4 lift">
+                  <span
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full
+                               bg-accent text-accent-ink text-xs font-bold tabular-nums"
+                  >
+                    {number(index + 1, locale)}
+                  </span>
+                  <p className="mt-2.5 font-semibold text-sm">{t(`how.${step}.title`)}</p>
+                  <p className="mt-1 text-sm text-ink-muted leading-relaxed">
+                    {t(`how.${step}.body`)}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </section>
         )}
 
         {route === "results" && (
-          <>
+          <div key="results" className="animate-rise pt-6 space-y-6">
             {error && (
-              <div className="rounded-xl border border-danger-line bg-danger-soft text-danger px-4 py-3">
+              <div
+                role="alert"
+                className="rounded-2xl border border-danger-line bg-danger-soft text-danger px-4 py-3"
+              >
                 {error}
               </div>
             )}
@@ -192,8 +242,8 @@ export default function App() {
                   <button
                     type="button"
                     onClick={retrySearch}
-                    className="rounded-lg bg-accent hover:bg-accent-hover px-5 py-2.5 text-sm
-                               font-semibold text-accent-ink transition"
+                    className="rounded-xl bg-accent hover:bg-accent-hover px-5 py-2.5 text-sm
+                               font-semibold text-accent-ink transition lift"
                   >
                     {t("nav.searchAgain")}
                   </button>
@@ -201,27 +251,29 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => navigate("search")}
-                  className="rounded-lg ring-1 ring-line-strong px-5 py-2.5 text-sm font-semibold
-                             text-ink-muted hover:text-ink transition"
+                  className="rounded-xl ring-1 ring-line-strong px-5 py-2.5 text-sm font-semibold
+                             text-ink-muted hover:text-ink transition lift"
                 >
                   {error ? t("nav.changeSearch") : t("nav.newSearch")}
                 </button>
               </div>
             )}
-          </>
+          </div>
         )}
 
         {route === "rules" && (
-          <RulesPage
-            disclaimer={disclaimer}
-            accepted={accepted}
-            onAccept={() => {
-              accept(result?.search_id ?? null);
-              // Straight back to what they were trying to see.
-              if (result) navigate("results");
-            }}
-            onBack={() => navigate(result ? "results" : "search")}
-          />
+          <div key="rules" className="animate-rise pt-6">
+            <RulesPage
+              disclaimer={disclaimer}
+              accepted={accepted}
+              onAccept={() => {
+                accept(result?.search_id ?? null);
+                // Straight back to what they were trying to see.
+                if (result) navigate("results");
+              }}
+              onBack={() => navigate(result ? "results" : "search")}
+            />
+          </div>
         )}
       </main>
 

@@ -102,7 +102,15 @@ class OfferCache(Base, TimestampMixin):
     __tablename__ = "offer_cache"
     __table_args__ = (
         UniqueConstraint(
-            "provider", "origin", "destination", "departure_date", "cabin", "adults",
+            "provider",
+            "origin",
+            "destination",
+            "departure_date",
+            "cabin",
+            "adults",
+            # Prices in two currencies are two different results, not one
+            # result with a label -- see OfferCacheRepository._row_for.
+            "currency",
             name="uq_offer_cache_key",
         ),
         Index("ix_offer_cache_fetched", "fetched_at"),

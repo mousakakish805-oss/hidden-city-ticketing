@@ -101,5 +101,10 @@ class OfferCacheRepository:
             .where(OfferCache.departure_date == request.departure_date)
             .where(OfferCache.cabin == request.cabin)
             .where(OfferCache.adults == request.adults)
+            # Currency is part of the identity of a cached result, not a
+            # property of it. Without this, asking for the same route in a
+            # different currency returns the previous currency's prices, and
+            # the page renders euro totals beside dollar fares.
+            .where(OfferCache.currency == request.currency)
         )
         return (await self._session.execute(statement)).scalar_one_or_none()

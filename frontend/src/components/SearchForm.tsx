@@ -1,11 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useI18n } from "../i18n";
+import { currencyOptions } from "../lib/currencies";
 import { addDays, dateInDays } from "../lib/format";
 import type { Cabin, SearchParams } from "../types";
 import { AirportInput } from "./AirportInput";
 
 const CABINS: Cabin[] = ["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"];
+
+const FIELD =
+  "w-full rounded-xl bg-canvas ring-1 ring-line px-3.5 py-3 text-base transition " +
+  "focus:outline-none focus:ring-2 focus:ring-accent hover:ring-line-strong";
+
+const LABEL = "block text-[11px] font-semibold uppercase tracking-wider text-ink-faint mb-1.5";
 
 interface Props {
   busy: boolean;
@@ -13,7 +20,7 @@ interface Props {
 }
 
 export function SearchForm({ busy, onSearch }: Props) {
-  const { t, lang } = useI18n();
+  const { t, lang, locale } = useI18n();
   const [params, setParams] = useState<SearchParams>({
     origin: "AMM",
     destination: "IST",
@@ -26,6 +33,8 @@ export function SearchForm({ busy, onSearch }: Props) {
     refresh: false,
     lang,
   });
+
+  const currencies = useMemo(() => currencyOptions(locale), [locale]);
 
   const isRoundTrip = params.return_date !== null;
 
@@ -47,6 +56,13 @@ export function SearchForm({ busy, onSearch }: Props) {
   const patch = (changes: Partial<SearchParams>) =>
     setParams((previous) => ({ ...previous, ...changes }));
 
+  const swapAirports = () =>
+    setParams((previous) => ({
+      ...previous,
+      origin: previous.destination,
+      destination: previous.origin,
+    }));
+
   const sameAirports = params.origin === params.destination && params.origin.length === 3;
   const returnTooEarly =
     params.return_date !== null && params.return_date < params.departure_date;
@@ -62,12 +78,12 @@ export function SearchForm({ busy, onSearch }: Props) {
         event.preventDefault();
         if (!invalid) onSearch(params);
       }}
-      className="rounded-2xl bg-surface ring-1 ring-line p-5 backdrop-blur"
+      className="rounded-3xl glass p-5 sm:p-6 shadow-[var(--shadow)]"
     >
       <div
         role="group"
         aria-label={t("form.tripType")}
-        className="mb-4 inline-flex rounded-lg ring-1 ring-line-strong overflow-hidden text-sm"
+        className="mb-5 inline-flex rounded-full bg-surface-2 p-1 text-sm"
       >
         {[
           { round: false, label: t("form.oneWay") },
@@ -78,9 +94,9 @@ export function SearchForm({ busy, onSearch }: Props) {
             type="button"
             onClick={() => setTripType(option.round)}
             aria-pressed={isRoundTrip === option.round}
-            className={`px-4 py-1.5 transition ${
+            className={`rounded-full px-4 py-1.5 transition ${
               isRoundTrip === option.round
-                ? "bg-ink text-canvas font-semibold"
+                ? "bg-accent text-accent-ink font-semibold shadow-[var(--shadow)]"
                 : "text-ink-muted hover:text-ink"
             }`}
           >
@@ -90,10 +106,10 @@ export function SearchForm({ busy, onSearch }: Props) {
       </div>
 
       <div
-        className={`grid gap-4 ${
+        className={`grid gap-4 items-end ${
           isRoundTrip
-            ? "md:grid-cols-[1fr_1fr_1fr_1fr_auto]"
-            : "md:grid-cols-[1fr_1fr_1fr_auto]"
+            ? "lg:grid-cols-[1fr_auto_1fr_1fr_1fr_auto]"
+            : "lg:grid-cols-[1fr_auto_1fr_1fr_auto]"
         }`}
       >
         <AirportInput
@@ -102,6 +118,23 @@ export function SearchForm({ busy, onSearch }: Props) {
           placeholder="AMM"
           onChange={(origin) => patch({ origin })}
         />
+
+        {/* Reverses the route in place. The commonest edit to a flight search
+            is the one that needs no typing at all. */}
+        <button
+          type="button"
+          onClick={swapAirports}
+          title={t("form.swap")}
+          aria-label={t("form.swap")}
+          className="hidden lg:flex h-11 w-11 shrink-0 items-center justify-center self-end
+                     rounded-full ring-1 ring-line-strong text-ink-muted transition
+                     hover:text-accent hover:ring-accent hover:rotate-180 active:scale-90"
+        >
+          <span aria-hidden className="text-lg leading-none">
+            ⇄
+          </span>
+        </button>
+
         <AirportInput
           label={t("form.to")}
           hint={t("form.toHint")}
@@ -109,11 +142,9 @@ export function SearchForm({ busy, onSearch }: Props) {
           placeholder="IST"
           onChange={(destination) => patch({ destination })}
         />
+
         <div>
-          <label
-            htmlFor="departure"
-            className="block text-xs font-medium uppercase tracking-wider text-ink-faint mb-1.5"
-          >
+          <label htmlFor="departure" className={LABEL}>
             {t("form.departure")}
           </label>
           <input
@@ -132,17 +163,13 @@ export function SearchForm({ busy, onSearch }: Props) {
                   : {}),
               });
             }}
-            className="w-full rounded-lg bg-surface ring-1 ring-line px-3 py-2.5 text-base
-                       focus:outline-none focus:ring-2 focus:ring-accent"
+            className={FIELD}
           />
         </div>
 
         {isRoundTrip && (
-          <div>
-            <label
-              htmlFor="return"
-              className="block text-xs font-medium uppercase tracking-wider text-ink-faint mb-1.5"
-            >
+          <div className="animate-fade-up">
+            <label htmlFor="return" className={LABEL}>
               {t("form.returnDate")}
             </label>
             <input
@@ -152,21 +179,32 @@ export function SearchForm({ busy, onSearch }: Props) {
               min={params.departure_date}
               max={dateInDays(360)}
               onChange={(event) => patch({ return_date: event.target.value || null })}
-              className="w-full rounded-lg bg-surface ring-1 ring-line px-3 py-2.5 text-base
-                         focus:outline-none focus:ring-2 focus:ring-accent"
+              className={FIELD}
             />
           </div>
         )}
-        <div className="flex items-end">
-          <button
-            type="submit"
-            disabled={busy || invalid}
-            className="w-full md:w-auto rounded-lg bg-accent hover:bg-accent-hover disabled:bg-surface-2
-                       disabled:text-ink-faint px-6 py-2.5 font-semibold text-accent-ink transition"
-          >
-            {busy ? t("form.searching") : t("form.search")}
-          </button>
-        </div>
+
+        <button
+          type="submit"
+          disabled={busy || invalid}
+          className="rounded-xl bg-accent hover:bg-accent-hover disabled:bg-surface-2
+                     disabled:text-ink-faint disabled:cursor-not-allowed px-7 py-3
+                     font-semibold text-accent-ink transition lift
+                     disabled:hover:translate-y-0 disabled:hover:shadow-none"
+        >
+          {busy ? (
+            <span className="inline-flex items-center gap-2">
+              <span
+                aria-hidden
+                className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent
+                           animate-spin"
+              />
+              {t("form.searching")}
+            </span>
+          ) : (
+            t("form.search")
+          )}
+        </button>
       </div>
 
       {sameAirports && <p className="mt-3 text-sm text-danger">{t("form.sameAirports")}</p>}
@@ -177,7 +215,7 @@ export function SearchForm({ busy, onSearch }: Props) {
         <p className="mt-3 text-xs text-ink-faint max-w-2xl">{t("form.twoTicketsNote")}</p>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-muted">
+      <div className="mt-5 pt-4 border-t border-line flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-ink-muted">
         <label className="flex items-center gap-2">
           <span>{t("form.passengers")}</span>
           <input
@@ -186,7 +224,7 @@ export function SearchForm({ busy, onSearch }: Props) {
             max={9}
             value={params.adults}
             onChange={(event) => patch({ adults: Number(event.target.value) })}
-            className="w-16 rounded bg-surface ring-1 ring-line px-2 py-1"
+            className="w-16 rounded-lg bg-canvas ring-1 ring-line px-2 py-1.5 tabular-nums"
           />
         </label>
 
@@ -195,11 +233,29 @@ export function SearchForm({ busy, onSearch }: Props) {
           <select
             value={params.cabin}
             onChange={(event) => patch({ cabin: event.target.value as Cabin })}
-            className="rounded bg-surface ring-1 ring-line px-2 py-1"
+            className="rounded-lg bg-canvas ring-1 ring-line px-2 py-1.5"
           >
             {CABINS.map((cabin) => (
               <option key={cabin} value={cabin}>
                 {t(`cabin.${cabin}` as "cabin.ECONOMY")}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/* Passed straight through to the provider, so fares are quoted in
+            this currency rather than converted after the fact -- a converted
+            price would drift from what the airline actually charges. */}
+        <label className="flex items-center gap-2">
+          <span>{t("form.currency")}</span>
+          <select
+            value={params.currency}
+            onChange={(event) => patch({ currency: event.target.value })}
+            className="rounded-lg bg-canvas ring-1 ring-line px-2 py-1.5 max-w-[13rem]"
+          >
+            {currencies.map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.label}
               </option>
             ))}
           </select>

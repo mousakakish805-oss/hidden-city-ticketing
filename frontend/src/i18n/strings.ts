@@ -20,6 +20,23 @@ const en = {
   "app.coverage": "{airports} airports · {countries} countries",
 
   "header.rules": "Rules & risks",
+
+  "hero.eyebrow": "Hidden-city fare finder",
+  "hero.title": "Sometimes the cheapest flight to your city isn't going to your city.",
+  "hero.body":
+    "Airlines can charge more to carry you into a hub than to carry you past it. " +
+    "We price your route directly, then price flights that continue beyond it and " +
+    "stop where you actually want to be — and show you when the longer trip costs less.",
+
+  "how.one.title": "Enter your route",
+  "how.one.body": "Where you are now, and the city you actually want to reach.",
+  "how.two.title": "We price past it",
+  "how.two.body":
+    "First the direct fare, then fares to cities further on whose flights connect through yours.",
+  "how.three.title": "You book with the airline",
+  "how.three.body":
+    "We only report prices. Read the rules first — leaving a flight unflown has real consequences.",
+
   "header.live": "live fares",
   "header.synthetic": "test data",
   "header.liveHint": "Live fares from {provider}",
@@ -58,6 +75,8 @@ const en = {
   "form.searching": "Scanning…",
   "form.passengers": "Passengers",
   "form.cabin": "Cabin",
+  "form.currency": "Currency",
+  "form.swap": "Swap origin and destination",
   "form.nearby": "Accept nearby airports",
   "form.nearbyHint": "e.g. accept landing at SAW when you asked for IST",
   "form.bypassCache": "Bypass cache",
@@ -187,6 +206,23 @@ const ar: Record<StringKey, string> = {
   "app.coverage": "{airports} مطار · {countries} دولة",
 
   "header.rules": "القواعد والمخاطر",
+
+  "hero.eyebrow": "باحث أسعار الوجهات المخفية",
+  "hero.title": "أحياناً أرخص رحلة إلى مدينتك ليست متجهة إلى مدينتك.",
+  "hero.body":
+    "قد تتقاضى شركات الطيران مقابلاً أعلى لتنقلك إلى محطة رئيسية مما تتقاضاه لتتجاوزها. " +
+    "نُسعّر مسارك مباشرة، ثم نُسعّر الرحلات التي تكمل إلى ما بعده وتتوقف حيث تريد فعلاً، " +
+    "ونُظهر لك متى تكون الرحلة الأطول أرخص.",
+
+  "how.one.title": "أدخل مسارك",
+  "how.one.body": "أين أنت الآن، وما المدينة التي تريد الوصول إليها فعلاً.",
+  "how.two.title": "نُسعّر ما بعدها",
+  "how.two.body":
+    "أولاً السعر المباشر، ثم أسعار المدن الأبعد التي تمر رحلاتها عبر مدينتك.",
+  "how.three.title": "تحجز لدى شركة الطيران",
+  "how.three.body":
+    "نحن نعرض الأسعار فقط. اقرأ القواعد أولاً — لترك رحلة دون أن تستقلّها عواقب حقيقية.",
+
   "header.live": "أسعار حقيقية",
   "header.synthetic": "بيانات تجريبية",
   "header.liveHint": "أسعار حقيقية من {provider}",
@@ -225,6 +261,8 @@ const ar: Record<StringKey, string> = {
   "form.searching": "جارٍ البحث…",
   "form.passengers": "المسافرون",
   "form.cabin": "الدرجة",
+  "form.currency": "العملة",
+  "form.swap": "تبديل مكان المغادرة والوجهة",
   "form.nearby": "اقبل المطارات القريبة",
   "form.nearbyHint": "مثلاً قبول النزول في SAW عند طلب IST",
   "form.bypassCache": "تجاهل الذاكرة المؤقتة",

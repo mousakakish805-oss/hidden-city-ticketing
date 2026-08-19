@@ -226,7 +226,7 @@ class SearchRequest:
     max_results: int = 30
     non_stop: bool = False
 
-    def cache_key(self, provider: str) -> tuple[str, str, str, str, str, int]:
+    def cache_key(self, provider: str) -> tuple[str, str, str, str, str, int, str]:
         return (
             provider,
             self.origin,
@@ -234,6 +234,9 @@ class SearchRequest:
             self.departure_date.isoformat(),
             self.cabin,
             self.adults,
+            # Two currencies are two results. Omitting this would let a EUR
+            # search be served USD prices, or the reverse.
+            self.currency,
         )
 
     def as_dict(self) -> dict[str, Any]:

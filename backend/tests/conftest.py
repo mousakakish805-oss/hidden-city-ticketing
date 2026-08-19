@@ -31,8 +31,9 @@ from datetime import date, timedelta  # noqa: E402
 import pytest  # noqa: E402
 import pytest_asyncio  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
 
-from app.db.base import init_models  # noqa: E402
+from app.db.base import SessionLocal, init_models  # noqa: E402
 from app.main import app  # noqa: E402
 from app.providers.mock import MockFlightProvider  # noqa: E402
 
@@ -53,3 +54,11 @@ async def client() -> AsyncIterator[AsyncClient]:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as http_client:
         yield http_client
+
+
+@pytest_asyncio.fixture
+async def session() -> AsyncIterator[AsyncSession]:
+    """A database session, for testing repositories without going via HTTP."""
+    await init_models()
+    async with SessionLocal() as db_session:
+        yield db_session
