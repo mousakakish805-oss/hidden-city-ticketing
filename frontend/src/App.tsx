@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { BatchProgress } from "./components/BatchProgress";
 import { DisclaimerModal } from "./components/DisclaimerModal";
+import { HeroPhoto } from "./components/HeroPhoto";
 import { HeroTicket } from "./components/HeroTicket";
 import { LanguageToggle } from "./components/LanguageToggle";
 import { ResultsPanel } from "./components/ResultsPanel";
@@ -145,22 +146,33 @@ export default function App() {
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 pb-16">
         {route === "search" && (
           <section key="landing" className="pt-10 sm:pt-14">
-            {/* The claim in words, and the same claim as an object. The ticket
-                is the only loud thing on this page; everything below it is
-                deliberately quiet. */}
-            <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+            {/* Somewhere worth flying to, then the claim, then the ticket that
+                explains it. The photograph is real -- Wikipedia's lead image
+                for the city named below it -- because a travel site running on
+                a stock beach nobody can place is exactly the kind of vagueness
+                this one exists to argue against. */}
+            {/* Athens, not a generic beach: it is the city the one verified real
+                  result in this project's history routed through -- AMM to IST
+                  via ATH, $225 against Turkish's $425 direct. Wikipedia's lead
+                  image for Santorini is a municipal map, which is a reminder
+                  that "any nice photo" is not a thing this can assume. */}
+              <HeroPhoto city="Athens">
               <div className="max-w-xl">
-                <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08]">
+                <h2
+                  className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08]
+                             text-white drop-shadow-sm"
+                >
                   {t("hero.title")}
                 </h2>
-                <p className="mt-5 text-base text-ink-muted leading-relaxed max-w-prose">
+                <p className="mt-5 text-base text-white/85 leading-relaxed max-w-prose">
                   {t("hero.body")}
                 </p>
               </div>
-              <HeroTicket />
-            </div>
+            </HeroPhoto>
 
-            <div className="mt-12">
+            {/* Lifted into the photograph, so the first thing to do with the
+                page overlaps the reason for doing it. */}
+            <div className="-mt-10 sm:-mt-14 relative px-1 sm:px-4">
               <SearchForm busy={busy} onSearch={runSearch} />
               {/* Directly under the form. These rules are what separates a
                   saving from a voided ticket, so they belong where someone
@@ -189,7 +201,9 @@ export default function App() {
             {/* Genuinely a sequence, so it is numbered; set as three lines of
                 prose rather than three identical cards, because the content is
                 a sentence each and cards would be packaging around nothing. */}
-            <ol className="mt-12 grid gap-6 sm:grid-cols-3 max-w-4xl">
+            <div className="mt-14 grid gap-10 md:grid-cols-[auto_minmax(0,1fr)] md:items-center">
+              <HeroTicket />
+              <ol className="grid gap-6 sm:grid-cols-2">
               {(["one", "two", "three"] as const).map((step, index) => (
                 <li key={step}>
                   <p className="coupon text-xs text-accent">{number(index + 1, locale)}</p>
@@ -198,8 +212,9 @@ export default function App() {
                     {t(`how.${step}.body`)}
                   </p>
                 </li>
-              ))}
-            </ol>
+                ))}
+              </ol>
+            </div>
           </section>
         )}
 
@@ -217,11 +232,26 @@ export default function App() {
             {busy && <BatchProgress events={events} />}
 
             {result && !busy && (
-              <ResultsPanel
-                result={result}
-                disclaimerAccepted={accepted}
-                onOpenDisclaimer={() => navigate("rules")}
-              />
+              <>
+                {/* The city you asked for, photographed. Not decoration on a
+                    results page -- it is the one place the destination is
+                    named in something other than a three-letter code. */}
+                <HeroPhoto city={result.outbound.destination_airport.city}>
+                  <p className="coupon text-xs text-white/70">
+                    {result.outbound.origin_airport.iata} →{" "}
+                    {result.outbound.destination_airport.iata}
+                  </p>
+                  <h2 className="mt-1 text-3xl sm:text-4xl font-semibold tracking-tight text-white">
+                    {result.outbound.destination_airport.city}
+                  </h2>
+                </HeroPhoto>
+
+                <ResultsPanel
+                  result={result}
+                  disclaimerAccepted={accepted}
+                  onOpenDisclaimer={() => navigate("rules")}
+                />
+              </>
             )}
 
             {(result || error) && !busy && (

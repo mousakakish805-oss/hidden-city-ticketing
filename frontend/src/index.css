@@ -20,20 +20,20 @@
 :root,
 :root[data-theme="light"] {
   --canvas: #ffffff;
-  --surface: #f8fafc;
-  --surface-2: #f1f5f9;
-  --line: #e2e8f0;
-  --line-strong: #cbd5e1;
+  --surface: #f7fbfc;
+  --surface-2: #eef6f8;
+  --line: #dfeaee;
+  --line-strong: #c2d7dd;
 
   --ink: #0f172a;
   --ink-muted: #475569;
   --ink-faint: #94a3b8;
 
-  --accent: #123f8c;
-  --accent-hover: #0d2f6b;
+  --accent: #0a7d91;
+  --accent-hover: #086475;
   --accent-ink: #ffffff;
-  --accent-soft: #eef3fb;
-  --accent-line: #c3d3ea;
+  --accent-soft: #e6f7fa;
+  --accent-line: #a9e0e9;
 
   --positive: #047857;
   --positive-soft: #ecfdf5;
@@ -47,6 +47,7 @@
   --danger-soft: #fef2f2;
   --danger-line: #fecaca;
 
+  --accent-bright: #22b8cc;
   --shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px rgb(15 23 42 / 0.06);
 }
 
@@ -81,6 +82,7 @@
   --danger-soft: #2d0f15;
   --danger-line: #86202f;
 
+  --accent-bright: #f43f5e;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.6), 0 8px 24px rgb(0 0 0 / 0.5);
 }
 
@@ -100,6 +102,7 @@
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-accent-line: var(--accent-line);
+  --color-accent-bright: var(--accent-bright);
 
   --color-positive: var(--positive);
   --color-positive-soft: var(--positive-soft);
@@ -180,6 +183,16 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
+}
+
+/* The hero scrim darkens the edge the text starts from, which swaps with the
+   writing direction. A gradient cannot read `inline-start` itself, so the
+   direction is handed to it as a variable. */
+:root {
+  --scrim-direction: right;
+}
+[dir="rtl"] {
+  --scrim-direction: left;
 }
 
 body {

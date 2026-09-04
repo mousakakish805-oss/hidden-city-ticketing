@@ -22,6 +22,7 @@ const en = {
   "header.rules": "Rules & risks",
 
   "hero.eyebrow": "Hidden-city fare finder",
+  "hero.photoCredit": "Photo from Wikimedia Commons",
   "hero.stubFlown": "You fly this",
   "hero.stubSkipped": "You never board this",
   "hero.ticketTo": "Ticket to",
@@ -215,6 +216,7 @@ const ar: Record<StringKey, string> = {
   "header.rules": "القواعد والمخاطر",
 
   "hero.eyebrow": "باحث أسعار الوجهات المخفية",
+  "hero.photoCredit": "الصورة من ويكيميديا كومنز",
   "hero.stubFlown": "هذا الجزء تسافر فيه",
   "hero.stubSkipped": "هذا الجزء لا تصعد إليه",
   "hero.ticketTo": "التذكرة إلى",
