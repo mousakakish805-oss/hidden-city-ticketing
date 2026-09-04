@@ -27,7 +27,12 @@ export function HeroTicket() {
         <p className="text-[11px] text-ink-faint">{t("hero.ticketTo")}</p>
         <p className="coupon text-3xl font-semibold tracking-tight mt-0.5">SCQ</p>
 
-        <div className="coupon mt-6 flex items-baseline gap-2 text-sm">
+        {/* Pinned left-to-right in both languages. A route is a sequence of
+            Latin identifiers, like a flight number or a departure board, and
+            mirroring it under RTL turns "AMM to MAD" into a flight going the
+            other way. Same reason the airport inputs and clock times are
+            pinned. */}
+        <div dir="ltr" className="coupon mt-6 flex items-baseline gap-2 text-sm">
           <span className="font-semibold">AMM</span>
           <span className="flex-1 border-t border-line-strong" />
           <span className="font-semibold text-accent">MAD</span>

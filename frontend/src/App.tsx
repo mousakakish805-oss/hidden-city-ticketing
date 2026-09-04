@@ -201,9 +201,9 @@ export default function App() {
             {/* Genuinely a sequence, so it is numbered; set as three lines of
                 prose rather than three identical cards, because the content is
                 a sentence each and cards would be packaging around nothing. */}
-            <div className="mt-14 grid gap-10 md:grid-cols-[auto_minmax(0,1fr)] md:items-center">
+            <div className="mt-14 grid gap-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center">
               <HeroTicket />
-              <ol className="grid gap-6 sm:grid-cols-2">
+              <ol className="grid gap-6 sm:grid-cols-3 lg:grid-cols-1 lg:gap-5">
               {(["one", "two", "three"] as const).map((step, index) => (
                 <li key={step}>
                   <p className="coupon text-xs text-accent">{number(index + 1, locale)}</p>
@@ -237,7 +237,7 @@ export default function App() {
                     results page -- it is the one place the destination is
                     named in something other than a three-letter code. */}
                 <HeroPhoto city={result.outbound.destination_airport.city}>
-                  <p className="coupon text-xs text-white/70">
+                  <p dir="ltr" className="coupon text-xs text-white/70">
                     {result.outbound.origin_airport.iata} →{" "}
                     {result.outbound.destination_airport.iata}
                   </p>
