@@ -28,7 +28,7 @@ export function BatchProgress({ events }: Props) {
   const percent = planned ? Math.min(100, (probes.length / planned) * 100) : 0;
 
   return (
-    <div className="rounded-2xl bg-surface ring-1 ring-line p-5 animate-fade-up">
+    <div className="rounded-2xl bg-surface ring-1 ring-line p-5 ">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-ink-muted">{t("progress.title")}</h3>
         <span className="text-sm text-ink-faint tabular-nums">

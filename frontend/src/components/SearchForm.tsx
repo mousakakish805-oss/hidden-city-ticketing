@@ -9,10 +9,10 @@ import { AirportInput } from "./AirportInput";
 const CABINS: Cabin[] = ["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"];
 
 const FIELD =
-  "w-full rounded-xl bg-canvas ring-1 ring-line px-3.5 py-3 text-base transition " +
-  "focus:outline-none focus:ring-2 focus:ring-accent hover:ring-line-strong";
+  "w-full rounded bg-canvas border border-line px-3 py-2.5 text-base transition " +
+  "focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent";
 
-const LABEL = "block text-[11px] font-semibold uppercase tracking-wider text-ink-faint mb-1.5";
+const LABEL = "block text-xs font-medium text-ink-muted mb-1.5";
 
 interface Props {
   busy: boolean;
@@ -78,12 +78,13 @@ export function SearchForm({ busy, onSearch }: Props) {
         event.preventDefault();
         if (!invalid) onSearch(params);
       }}
-      className="rounded-3xl glass p-5 sm:p-6 shadow-[var(--shadow)]"
+      className="ticket flex flex-col lg:flex-row shadow-[var(--shadow)]"
     >
+      <div className="flex-1 p-5 sm:p-6 min-w-0">
       <div
         role="group"
         aria-label={t("form.tripType")}
-        className="mb-5 inline-flex rounded-full bg-surface-2 p-1 text-sm"
+        className="mb-5 inline-flex border border-line rounded overflow-hidden text-sm"
       >
         {[
           { round: false, label: t("form.oneWay") },
@@ -94,9 +95,9 @@ export function SearchForm({ busy, onSearch }: Props) {
             type="button"
             onClick={() => setTripType(option.round)}
             aria-pressed={isRoundTrip === option.round}
-            className={`rounded-full px-4 py-1.5 transition ${
+            className={`px-4 py-1.5 transition ${
               isRoundTrip === option.round
-                ? "bg-accent text-accent-ink font-semibold shadow-[var(--shadow)]"
+                ? "bg-accent text-accent-ink font-semibold"
                 : "text-ink-muted hover:text-ink"
             }`}
           >
@@ -168,7 +169,7 @@ export function SearchForm({ busy, onSearch }: Props) {
         </div>
 
         {isRoundTrip && (
-          <div className="animate-fade-up">
+          <div className="">
             <label htmlFor="return" className={LABEL}>
               {t("form.returnDate")}
             </label>
@@ -189,8 +190,7 @@ export function SearchForm({ busy, onSearch }: Props) {
           disabled={busy || invalid}
           className="rounded-xl bg-accent hover:bg-accent-hover disabled:bg-surface-2
                      disabled:text-ink-faint disabled:cursor-not-allowed px-7 py-3
-                     font-semibold text-accent-ink transition lift
-                     disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                     font-semibold text-accent-ink transition disabled:hover:translate-y-0 disabled:hover:shadow-none"
         >
           {busy ? (
             <span className="inline-flex items-center gap-2">
@@ -215,7 +215,14 @@ export function SearchForm({ busy, onSearch }: Props) {
         <p className="mt-3 text-xs text-ink-faint max-w-2xl">{t("form.twoTicketsNote")}</p>
       )}
 
-      <div className="mt-5 pt-4 border-t border-line flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-ink-muted">
+      </div>
+
+      <div className="perf notch relative h-3 w-full lg:h-auto lg:w-3 shrink-0" />
+
+      <div
+        className="p-5 sm:p-6 flex flex-row flex-wrap lg:flex-col gap-x-6 gap-y-4
+                   text-sm text-ink-muted lg:w-56 shrink-0"
+      >
         <label className="flex items-center gap-2">
           <span>{t("form.passengers")}</span>
           <input

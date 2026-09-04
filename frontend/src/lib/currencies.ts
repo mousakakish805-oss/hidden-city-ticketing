@@ -61,6 +61,6 @@ export interface CurrencyOption {
 export function currencyOptions(locale: string): CurrencyOption[] {
   const collator = new Intl.Collator(locale);
   return allCurrencyCodes()
-    .map((code) => ({ code, label: `${code} — ${currencyName(code, locale)}` }))
+    .map((code) => ({ code, label: `${code} ${currencyName(code, locale)}` }))
     .sort((a, b) => collator.compare(a.label, b.label));
 }

@@ -59,9 +59,9 @@ export function AirportInput({ label, hint, value, placeholder, onChange }: Prop
 
   return (
     <div className="relative">
-      <label className="block text-xs font-medium uppercase tracking-wider text-ink-faint mb-1.5">
+      <label className="block text-xs font-medium text-ink-muted mb-1.5">
         {label}
-        {hint && <span className="ms-2 normal-case tracking-normal text-ink-faint">{hint}</span>}
+        {hint && <span className="ms-2 text-ink-faint">{hint}</span>}
       </label>
       <input
         value={value}
@@ -83,8 +83,8 @@ export function AirportInput({ label, hint, value, placeholder, onChange }: Prop
         // IATA codes are Latin identifiers -- typing them must stay LTR even
         // when the rest of the page is right-to-left.
         dir="ltr"
-        className="w-full rounded-lg bg-surface ring-1 ring-line px-3 py-2.5 text-lg font-semibold
-                   tracking-wide focus:outline-none focus:ring-2 focus:ring-accent
+        className="coupon w-full rounded bg-canvas border border-line px-3 py-2.5 text-lg font-semibold
+                   tracking-wide focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent
                    placeholder:text-ink-faint placeholder:font-normal"
       />
 

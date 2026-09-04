@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Backdrop } from "./components/Backdrop";
 import { BatchProgress } from "./components/BatchProgress";
 import { DisclaimerModal } from "./components/DisclaimerModal";
+import { HeroTicket } from "./components/HeroTicket";
 import { LanguageToggle } from "./components/LanguageToggle";
 import { ResultsPanel } from "./components/ResultsPanel";
 import { RulesPage } from "./components/RulesPage";
@@ -68,19 +68,11 @@ export default function App() {
     if (route === "results" && !result && !busy && !error) navigate("search");
   }, [route, result, busy, error, navigate]);
 
-  const onLanding = route === "search";
-
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Only behind the landing page. Over a page of prices and warnings it
-          would be decoration competing with information. */}
-      {onLanding && <Backdrop />}
-
       <header className="sticky top-0 z-20">
-        <div
-          className={`mx-auto max-w-6xl m-3 rounded-2xl px-4 py-2.5 flex items-center gap-3
-                      glass ${onLanding ? "" : "shadow-[var(--shadow)]"}`}
-        >
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-3
+                        bg-canvas border-b border-line">
           <button
             type="button"
             onClick={() => navigate("search")}
@@ -94,14 +86,7 @@ export default function App() {
               />
               {t("app.title")}
             </h1>
-            <p className="text-[11px] text-ink-faint truncate">
-              {coverage
-                ? t("app.coverage", {
-                    airports: number(coverage.airports, locale),
-                    countries: number(coverage.countries, locale),
-                  })
-                : t("app.subtitle")}
-            </p>
+            <p className="text-[11px] text-ink-faint truncate">{t("app.subtitle")}</p>
           </button>
 
           <div className="ms-auto flex items-center gap-2 text-xs shrink-0">
@@ -112,8 +97,7 @@ export default function App() {
               type="button"
               onClick={() => navigate("rules")}
               aria-current={route === "rules" ? "page" : undefined}
-              className={`rounded-full px-3 py-1.5 font-semibold ring-1 transition lift
-                          ${
+              className={`rounded-full px-3 py-1.5 font-semibold ring-1 transition ${
                             route === "rules"
                               ? "bg-accent text-accent-ink ring-accent"
                               : "ring-line-strong text-ink-muted hover:text-ink"
@@ -137,7 +121,7 @@ export default function App() {
               >
                 {health.provider_live && (
                   <span aria-hidden className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inset-0 rounded-full bg-positive animate-pulse-ring" />
+                    <span className="absolute inset-0 rounded-full bg-positive " />
                     <span className="relative h-1.5 w-1.5 rounded-full bg-positive" />
                   </span>
                 )}
@@ -176,36 +160,42 @@ export default function App() {
 
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 pb-16">
         {route === "search" && (
-          <section key="landing" className="animate-rise pt-10 sm:pt-16">
-            <div className="max-w-3xl">
-              <p
-                className="inline-flex items-center gap-2 rounded-full bg-accent-soft text-accent
-                           ring-1 ring-accent-line px-3 py-1 text-xs font-semibold animate-pop"
-              >
-                {t("hero.eyebrow")}
-              </p>
-              <h2 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1]">
-                {t("hero.title")}
-              </h2>
-              <p className="mt-4 text-base sm:text-lg text-ink-muted leading-relaxed">
-                {t("hero.body")}
-              </p>
+          <section key="landing" className="pt-10 sm:pt-14">
+            {/* The claim in words, and the same claim as an object. The ticket
+                is the only loud thing on this page; everything below it is
+                deliberately quiet. */}
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+              <div className="max-w-xl">
+                <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08]">
+                  {t("hero.title")}
+                </h2>
+                <p className="mt-5 text-base text-ink-muted leading-relaxed max-w-prose">
+                  {t("hero.body")}
+                </p>
+              </div>
+              <HeroTicket />
             </div>
 
-            <div className="mt-8">
+            <div className="mt-12">
               <SearchForm busy={busy} onSearch={runSearch} />
+              {coverage && (
+                <p className="mt-3 text-xs text-ink-faint">
+                  {t("app.coverage", {
+                    airports: number(coverage.airports, locale),
+                    countries: number(coverage.countries, locale),
+                  })}
+                </p>
+              )}
             </div>
 
-            <ol className="stagger mt-10 grid gap-4 sm:grid-cols-3">
+            {/* Genuinely a sequence, so it is numbered; set as three lines of
+                prose rather than three identical cards, because the content is
+                a sentence each and cards would be packaging around nothing. */}
+            <ol className="mt-12 grid gap-6 sm:grid-cols-3 max-w-4xl">
               {(["one", "two", "three"] as const).map((step, index) => (
-                <li key={step} className="rounded-2xl glass p-4 lift">
-                  <span
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full
-                               bg-accent text-accent-ink text-xs font-bold tabular-nums"
-                  >
-                    {number(index + 1, locale)}
-                  </span>
-                  <p className="mt-2.5 font-semibold text-sm">{t(`how.${step}.title`)}</p>
+                <li key={step}>
+                  <p className="coupon text-xs text-accent">{number(index + 1, locale)}</p>
+                  <p className="mt-1.5 font-semibold text-sm">{t(`how.${step}.title`)}</p>
                   <p className="mt-1 text-sm text-ink-muted leading-relaxed">
                     {t(`how.${step}.body`)}
                   </p>
@@ -216,7 +206,7 @@ export default function App() {
         )}
 
         {route === "results" && (
-          <div key="results" className="animate-rise pt-6 space-y-6">
+          <div key="results" className="pt-6 space-y-6">
             {error && (
               <div
                 role="alert"
@@ -243,7 +233,7 @@ export default function App() {
                     type="button"
                     onClick={retrySearch}
                     className="rounded-xl bg-accent hover:bg-accent-hover px-5 py-2.5 text-sm
-                               font-semibold text-accent-ink transition lift"
+                               font-semibold text-accent-ink transition "
                   >
                     {t("nav.searchAgain")}
                   </button>
@@ -252,7 +242,7 @@ export default function App() {
                   type="button"
                   onClick={() => navigate("search")}
                   className="rounded-xl ring-1 ring-line-strong px-5 py-2.5 text-sm font-semibold
-                             text-ink-muted hover:text-ink transition lift"
+                             text-ink-muted hover:text-ink transition "
                 >
                   {error ? t("nav.changeSearch") : t("nav.newSearch")}
                 </button>
@@ -262,7 +252,7 @@ export default function App() {
         )}
 
         {route === "rules" && (
-          <div key="rules" className="animate-rise pt-6">
+          <div key="rules" className="pt-6">
             <RulesPage
               disclaimer={disclaimer}
               accepted={accepted}

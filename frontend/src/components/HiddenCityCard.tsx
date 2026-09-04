@@ -30,7 +30,7 @@ export function HiddenCityCard({ option, currency }: Props) {
   return (
     <article
       className="rounded-2xl bg-gradient-to-b from-positive-soft to-transparent
-                 ring-1 ring-positive-line p-5 animate-fade-up"
+                 ring-1 ring-positive-line p-5 "
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>

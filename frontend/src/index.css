@@ -29,11 +29,11 @@
   --ink-muted: #475569;
   --ink-faint: #94a3b8;
 
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
+  --accent: #123f8c;
+  --accent-hover: #0d2f6b;
   --accent-ink: #ffffff;
-  --accent-soft: #eff6ff;
-  --accent-line: #bfdbfe;
+  --accent-soft: #eef3fb;
+  --accent-line: #c3d3ea;
 
   --positive: #047857;
   --positive-soft: #ecfdf5;
@@ -51,9 +51,9 @@
 }
 
 :root[data-theme="dark"] {
-  --canvas: #050505;
-  --surface: #111111;
-  --surface-2: #1a1a1a;
+  --canvas: #000000;
+  --surface: #0e0e0f;
+  --surface-2: #17171a;
   --line: #262626;
   --line-strong: #3a3a3a;
 
@@ -61,11 +61,11 @@
   --ink-muted: #a3a3a3;
   --ink-faint: #6b6b6b;
 
-  --accent: #e11d48;
-  --accent-hover: #f43f5e;
+  --accent: #c8102e;
+  --accent-hover: #e11b38;
   --accent-ink: #ffffff;
-  --accent-soft: #2a0d13;
-  --accent-line: #7f1d2e;
+  --accent-soft: #260609;
+  --accent-line: #6d1420;
 
   --positive: #34d399;
   --positive-soft: #0c231b;
@@ -113,19 +113,40 @@
   --color-danger-soft: var(--danger-soft);
   --color-danger-line: var(--danger-line);
 
-  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-fade-in: fade-in 0.4s ease-out both;
-  --animate-rise: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  --animate-drift: drift 22s ease-in-out infinite alternate;
-  --animate-sweep: sweep 1.6s ease-in-out infinite;
-  --animate-pulse-ring: pulse-ring 1.8s ease-out infinite;
+  /* One page-load sequence, and motion that answers a click. Nothing that
+     loops, drifts or reacts to a passing cursor -- a page where every card
+     lifts and every section slides up reads as decoration, not as meaning. */
+  --animate-tear: tear 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+  --animate-print: print 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  /* Arabic is listed before the generic monos on purpose: Plex Mono has no
+     Arabic glyphs, and a stray Arabic string in a coupon should fall to the
+     family the rest of the page is set in rather than to a system default. */
+  --font-mono: "IBM Plex Mono", "IBM Plex Sans Arabic", ui-monospace, Menlo, monospace;
 }
 
-@keyframes fade-up {
+/* The one moment. The stub separates from the ticket on load: the whole
+   product is that the last coupon goes unused, so the page opens by doing it
+   rather than by explaining it. */
+@keyframes tear {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateX(-0.75rem) rotate(0deg);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotate(1.4deg);
+  }
+}
+
+/* The ticket body arriving under the stub, as if fed out of a printer. */
+@keyframes print {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
   }
   to {
     opacity: 1;
@@ -133,114 +154,76 @@
   }
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+/* ------------------------------------------------------------- the ticket ---
+ * A boarding pass is not a rounded rectangle, and the difference is the whole
+ * design: the perforation is where the journey you fly stops and the journey
+ * you abandon begins. It is drawn with a repeating-linear-gradient rather than
+ * a border so it reads as punched holes, and the notches are real cut-outs
+ * masked from the card, so the shape survives on any background.
+ */
+.ticket {
+  background-color: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 0.375rem;
+  position: relative;
+}
+
+/* The punch line itself. Vertical on wide screens, horizontal when the stub
+   drops below the body. */
+.perf {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--line-strong) 0 6px,
+    transparent 6px 12px
+  );
+  background-size: 1px 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+@media (max-width: 63.999rem) {
+  .perf {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--line-strong) 0 6px,
+      transparent 6px 12px
+    );
+    background-size: 100% 1px;
   }
 }
 
-/* Further and slower than fade-up: for things arriving as a page, not as a
-   detail inside one. */
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+/* The two half-notches that make the perforation read as a tear line rather than
+   a divider. Sized against the card edge so they sit half outside it. */
+.notch::before,
+.notch::after {
+  content: "";
+  position: absolute;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 9999px;
+  background-color: var(--canvas);
+  border: 1px solid var(--line-strong);
+  z-index: 1;
+}
+.notch::before {
+  top: -0.6rem;
+}
+.notch::after {
+  bottom: -0.6rem;
 }
 
-@keyframes pop {
-  from {
-    opacity: 0;
-    transform: scale(0.94);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* The two colour fields behind the landing hero. Slow and low-contrast on
-   purpose -- it should read as depth, not as something demanding attention
-   while someone is typing an airport code. */
-@keyframes drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(4%, -6%, 0) scale(1.12);
-  }
-}
-
-/* Travels along the progress bar while the batch engine works. */
-@keyframes sweep {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(320%);
-  }
-}
-
-@keyframes pulse-ring {
-  from {
-    opacity: 0.55;
-    transform: scale(0.85);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.9);
-  }
-}
-
-/* Children arrive one after another rather than all at once. Depth is capped
-   at eight: past that the last card waits long enough to feel broken. */
-.stagger > * {
-  animation: var(--animate-fade-up);
-}
-.stagger > *:nth-child(1) { animation-delay: 0.02s; }
-.stagger > *:nth-child(2) { animation-delay: 0.07s; }
-.stagger > *:nth-child(3) { animation-delay: 0.12s; }
-.stagger > *:nth-child(4) { animation-delay: 0.17s; }
-.stagger > *:nth-child(5) { animation-delay: 0.22s; }
-.stagger > *:nth-child(6) { animation-delay: 0.27s; }
-.stagger > *:nth-child(7) { animation-delay: 0.32s; }
-.stagger > *:nth-child(n + 8) { animation-delay: 0.36s; }
-
-/* Frosted panel over the drifting background. The fallback matters: without
-   it, a browser lacking backdrop-filter renders text on bare gradient. */
-.glass {
-  background-color: color-mix(in srgb, var(--surface) 82%, transparent);
-  border: 1px solid color-mix(in srgb, var(--line-strong) 60%, transparent);
-}
-@supports (backdrop-filter: blur(1px)) {
-  .glass {
-    background-color: color-mix(in srgb, var(--surface) 62%, transparent);
-    backdrop-filter: blur(16px) saturate(140%);
-  }
-}
-
-/* Lift on hover, for things that are actually clickable. */
-.lift {
-  transition:
-    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
-}
-.lift:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow);
+/* Machine-printed data: airport codes, flight numbers, fares, times. Not a
+   stylistic flourish -- a boarding pass really is set this way, and it is how
+   a traveller tells a code from a sentence at a glance. */
+.coupon {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 body {
   background-color: var(--canvas);
   color: var(--ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 

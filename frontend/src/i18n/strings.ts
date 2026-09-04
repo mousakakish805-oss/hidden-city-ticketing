@@ -17,11 +17,16 @@ export const LANGUAGES: { code: Lang; name: string; dir: "ltr" | "rtl" }[] = [
 const en = {
   "app.title": "Hidden-City Ticketing",
   "app.subtitle": "Multi-segment flight price comparison",
-  "app.coverage": "{airports} airports · {countries} countries",
+  "app.coverage": "Searching {airports} airports across {countries} countries.",
 
   "header.rules": "Rules & risks",
 
   "hero.eyebrow": "Hidden-city fare finder",
+  "hero.stubFlown": "You fly this",
+  "hero.stubSkipped": "You never board this",
+  "hero.ticketTo": "Ticket to",
+  "hero.getOffAt": "Get off at",
+  "hero.sampleSaving": "Costs {amount} less than flying straight to Madrid",
   "hero.title": "Sometimes the cheapest flight to your city isn't going to your city.",
   "hero.body":
     "Airlines can charge more to carry you into a hub than to carry you past it. " +
@@ -203,11 +208,16 @@ export type StringKey = keyof typeof en;
 const ar: Record<StringKey, string> = {
   "app.title": "تذاكر الوجهة المخفية",
   "app.subtitle": "مقارنة أسعار الرحلات متعددة المراحل",
-  "app.coverage": "{airports} مطار · {countries} دولة",
+  "app.coverage": "يبحث في {airports} مطاراً عبر {countries} دولة.",
 
   "header.rules": "القواعد والمخاطر",
 
   "hero.eyebrow": "باحث أسعار الوجهات المخفية",
+  "hero.stubFlown": "هذا الجزء تسافر فيه",
+  "hero.stubSkipped": "هذا الجزء لا تصعد إليه",
+  "hero.ticketTo": "التذكرة إلى",
+  "hero.getOffAt": "تنزل في",
+  "hero.sampleSaving": "أرخص بـ {amount} من الطيران مباشرة إلى مدريد",
   "hero.title": "أحياناً أرخص رحلة إلى مدينتك ليست متجهة إلى مدينتك.",
   "hero.body":
     "قد تتقاضى شركات الطيران مقابلاً أعلى لتنقلك إلى محطة رئيسية مما تتقاضاه لتتجاوزها. " +
