@@ -15,6 +15,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import quote_plus
 
 import pandas as pd
 
@@ -132,16 +133,26 @@ class HiddenCityOption:
     def booking(self, lang: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
         """Where and how to buy this fare.
 
-        We link to the airline's own site rather than a deep link into its
-        booking flow, and spell out the search to run -- ticketed destination,
-        one way, connecting at the city you actually want. Nothing here books
-        anything; this app only reports prices.
+        Two links, because they fail in different ways.
+
+        ``search_url`` goes to Google Flights with this exact one-way market
+        already filled in, so the itinerary is on screen rather than described.
+        It is built from a plain-language query Google parses, not from an
+        internal parameter format that would rot without notice.
+
+        ``url`` is the airline's own homepage. Deliberately the homepage and
+        not a deep link into a booking flow: every carrier's search URL differs
+        and those formats change silently, so a fabricated deep link breaks
+        without anyone noticing. Between the two, one always works.
+
+        Nothing here books anything; this app only reports prices.
         """
         url = airline_booking_url(self.carrier)
         return {
             "carrier": self.carrier,
             "carrier_name": airline_name(self.carrier),
             "url": url,
+            "search_url": self.search_url(),
             "instructions": translate(
                 "booking.instructions",
                 lang,
@@ -149,6 +160,14 @@ class HiddenCityOption:
                 ticketed_iata=self.ticketed_iata,
                 deplane_iata=self.deplane_iata,
                 date=self.offer.departure_date.isoformat(),
+            ),
+            "search_label": translate("booking.openSearch", lang),
+            "search_note": translate(
+                "booking.openSearchNote",
+                lang,
+                origin=self.offer.search_origin,
+                ticketed_iata=self.ticketed_iata,
+                deplane_iata=self.deplane_iata,
             ),
             "note": (
                 None
@@ -158,6 +177,19 @@ class HiddenCityOption:
                 )
             ),
         }
+
+    def search_url(self) -> str:
+        """A Google Flights search for the ticketed market, one way.
+
+        The route is origin -> *ticketed* city, never origin -> the city you
+        actually want: booking the short version is the one mistake that makes
+        the whole fare pointless.
+        """
+        query = (
+            f"Flights from {self.offer.search_origin} to {self.ticketed_iata} "
+            f"on {self.offer.departure_date.isoformat()} one way"
+        )
+        return "https://www.google.com/travel/flights?q=" + quote_plus(query)
 
     def to_dict(self, lang: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
         return {

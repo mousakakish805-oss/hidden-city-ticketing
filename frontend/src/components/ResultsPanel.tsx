@@ -87,14 +87,17 @@ export function ResultsPanel({ result, disclaimerAccepted, onOpenDisclaimer }: P
         />
       )}
 
-      <p className="text-xs text-ink-faint pb-8">
-        {t("footer.meta", {
-          provider: result.provider,
-          probes:
-            result.outbound.probes.length + (result.inbound?.probes.length ?? 0),
-          ms: result.duration_ms,
-          time: dateTime(result.generated_at, locale),
-        })}
+      {/* Three separate facts, each isolated. Joined into one string with
+          middle dots they reordered under Arabic bidi and read as filler. */}
+      <p className="text-xs text-ink-faint pb-8 flex flex-wrap gap-x-4 gap-y-1">
+        <bdi>{t("footer.provider", { provider: result.provider })}</bdi>
+        <bdi>
+          {t("footer.probes", {
+            probes: result.outbound.probes.length + (result.inbound?.probes.length ?? 0),
+            ms: result.duration_ms,
+          })}
+        </bdi>
+        <bdi>{t("footer.generated", { time: dateTime(result.generated_at, locale) })}</bdi>
       </p>
     </>
   );

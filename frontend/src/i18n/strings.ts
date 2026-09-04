@@ -139,12 +139,12 @@ const en = {
   "confidence.low": "Fragile: the airline could easily route you around the city you want.",
 
   "booking.title": "How to book this",
-  "booking.openSite": "Open {airline} ↗",
+  "booking.openSite": "Open the {airline} site",
   "booking.note": "We only show prices. You book on the airline's own site.",
 
   "standard.title": "Standard flights to {city}",
   "standard.subtitle": "What an ordinary search shows: {count} offers from {price}",
-  "standard.cheapest": "cheapest direct",
+  "standard.cheapest": "cheapest normal fare",
   "standard.nonstop": "nonstop",
   "standard.stops_one": "1 stop",
   "standard.stops_other": "{count} stops",
@@ -163,7 +163,9 @@ const en = {
   "empty.intro":
     "Enter where you are and where you actually want to go. We price the direct route, then price flights that continue past your destination — and show you when the longer trip costs less.",
 
-  "footer.meta": "Provider: {provider} · {probes} markets priced in {ms} ms · generated {time}",
+  "footer.provider": "Fares from {provider}",
+  "footer.probes": "{probes} onward markets priced in {ms} ms",
+  "footer.generated": "Generated {time}",
 
   "error.generic": "Something went wrong. Please try again.",
   "error.unreachable":
@@ -328,12 +330,12 @@ const ar: Record<StringKey, string> = {
   "confidence.low": "هشّ: تستطيع شركة الطيران بسهولة أن تحوّل مسارك بعيداً عن المدينة التي تريدها.",
 
   "booking.title": "كيف تحجز هذه الرحلة",
-  "booking.openSite": "افتح موقع {airline} ↗",
+  "booking.openSite": "افتح موقع {airline}",
   "booking.note": "نحن نعرض الأسعار فقط. الحجز يتم على موقع شركة الطيران نفسها.",
 
   "standard.title": "الرحلات الاعتيادية إلى {city}",
   "standard.subtitle": "ما يعرضه البحث العادي: {count} عرضاً ابتداءً من {price}",
-  "standard.cheapest": "أرخص رحلة مباشرة",
+  "standard.cheapest": "أرخص سعر اعتيادي",
   "standard.nonstop": "بدون توقف",
   "standard.stops_one": "توقف واحد",
   "standard.stops_other": "عدد محطات التوقف: {count}",
@@ -352,7 +354,9 @@ const ar: Record<StringKey, string> = {
   "empty.intro":
     "أدخل موقعك الحالي والوجهة التي تريدها فعلاً. نُسعّر الرحلة المباشرة، ثم نُسعّر الرحلات التي تكمل إلى ما بعد وجهتك، ونُظهر لك متى تكون الرحلة الأطول أرخص.",
 
-  "footer.meta": "المزوّد: {provider} · تم تسعير {probes} سوقاً خلال {ms} مللي ثانية · {time}",
+  "footer.provider": "الأسعار من {provider}",
+  "footer.probes": "تم تسعير {probes} سوقاً لاحقاً خلال {ms} مللي ثانية",
+  "footer.generated": "أُنشئت في {time}",
 
   "error.generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
   "error.unreachable":

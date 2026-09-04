@@ -188,6 +188,12 @@ MESSAGES_EN: dict[str, str] = {
         "Search {origin} to {ticketed_iata} on {date}, one way, and choose the "
         "itinerary that connects in {deplane_iata}."
     ),
+    "booking.openSearch": "See this flight on Google Flights",
+    "booking.openSearchNote": (
+        "Opens the {origin} to {ticketed_iata} search, one way. Pick the "
+        "itinerary that connects in {deplane_iata}, then book it on the "
+        "airline's own site."
+    ),
     "booking.no_site": (
         "We do not have a website on file for {carrier_name}. Search for their "
         "official site, or use any travel agent."

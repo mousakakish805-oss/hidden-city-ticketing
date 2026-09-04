@@ -107,6 +107,10 @@ export interface BookingGuidance {
   carrier_name: string;
   /** Official airline site, or null when we have no verified URL on file. */
   url: string | null;
+  /** Google Flights, already filled in with the ticketed one-way market. */
+  search_url: string;
+  search_label: string;
+  search_note: string;
   instructions: string;
   note: string | null;
 }

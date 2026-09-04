@@ -27,20 +27,25 @@ export function StandardOfferCard({ offer, currency, isCheapest }: Props) {
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <SegmentTimeline itinerary={itinerary} />
-          <p className="mt-1.5 text-xs text-ink-faint">
-            {offer.primary_carrier_name} &middot; {duration(t, itinerary.duration_minutes)}{" "}
-            &middot;{" "}
-            {offer.stop_count === 0
-              ? t("standard.nonstop")
-              : plural(t, "standard.stops", offer.stop_count)}
+          {/* Every field is its own <bdi>. Concatenating an airline name, a
+              duration and a clock time into one Arabic sentence let the bidi
+              algorithm reorder across the boundaries: "2h 15m" came apart and
+              the 2 landed at the far end of the line, beside a different
+              field. Isolation fixes that, and laying the fields out with gaps
+              removes the middle dots -- neutral characters that made the
+              reordering worse and read as filler in both languages. */}
+          <p className="mt-1.5 text-xs text-ink-faint flex flex-wrap items-center gap-x-3 gap-y-0.5">
+            <bdi>{offer.primary_carrier_name}</bdi>
+            <bdi>{duration(t, itinerary.duration_minutes)}</bdi>
+            <bdi>
+              {offer.stop_count === 0
+                ? t("standard.nonstop")
+                : plural(t, "standard.stops", offer.stop_count)}
+            </bdi>
             {first && last && (
-              <>
-                {" "}
-                &middot;{" "}
-                <span dir="ltr">
-                  {timeOfDay(first.departure_at, locale)} – {timeOfDay(last.arrival_at, locale)}
-                </span>
-              </>
+              <bdi dir="ltr">
+                {timeOfDay(first.departure_at, locale)} – {timeOfDay(last.arrival_at, locale)}
+              </bdi>
             )}
           </p>
         </div>

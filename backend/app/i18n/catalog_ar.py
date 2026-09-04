@@ -169,6 +169,11 @@ MESSAGES_AR: dict[str, str] = {
         "ابحث عن رحلة من {origin} إلى {ticketed_iata} بتاريخ {date}، ذهاب فقط، "
         "ثم اختر المسار الذي يتوقف في {deplane_iata}."
     ),
+    "booking.openSearch": "شاهد هذه الرحلة على Google Flights",
+    "booking.openSearchNote": (
+        "يفتح البحث من {origin} إلى {ticketed_iata} ذهاباً فقط. اختر المسار "
+        "الذي يتوقف في {deplane_iata}، ثم احجزه على موقع شركة الطيران نفسها."
+    ),
     "booking.no_site": (
         "لا يتوفر لدينا موقع إلكتروني لـ {carrier_name}. ابحث عن موقعها الرسمي "
         "أو استخدم أي وكيل سفر."
