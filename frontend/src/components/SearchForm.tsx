@@ -220,28 +220,28 @@ export function SearchForm({ busy, onSearch }: Props) {
       
 
       <div
-        className="p-5 sm:p-6 flex flex-row flex-wrap lg:flex-col gap-x-6 gap-y-4
+        className="p-5 sm:p-6 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-x-6 gap-y-4
                    border-t border-dashed border-line-strong lg:border-t-0 lg:border-s
-                   text-sm text-ink-muted lg:w-52 shrink-0"
+                   text-sm text-ink-muted lg:w-60 shrink-0 min-w-0"
       >
-        <label className="flex items-center gap-2">
-          <span>{t("form.passengers")}</span>
+        <label className="min-w-0">
+          <span className="block text-xs mb-1">{t("form.passengers")}</span>
           <input
             type="number"
             min={1}
             max={9}
             value={params.adults}
             onChange={(event) => patch({ adults: Number(event.target.value) })}
-            className="w-16 rounded-lg bg-canvas ring-1 ring-line px-2 py-1.5 tabular-nums"
+            className="w-full rounded bg-canvas border border-line px-2 py-1.5 transition focus:outline-none focus:border-accent tabular-nums"
           />
         </label>
 
-        <label className="flex items-center gap-2">
-          <span>{t("form.cabin")}</span>
+        <label className="min-w-0">
+          <span className="block text-xs mb-1">{t("form.cabin")}</span>
           <select
             value={params.cabin}
             onChange={(event) => patch({ cabin: event.target.value as Cabin })}
-            className="rounded-lg bg-canvas ring-1 ring-line px-2 py-1.5"
+            className="w-full rounded bg-canvas border border-line px-2 py-1.5 transition focus:outline-none focus:border-accent"
           >
             {CABINS.map((cabin) => (
               <option key={cabin} value={cabin}>
@@ -254,12 +254,12 @@ export function SearchForm({ busy, onSearch }: Props) {
         {/* Passed straight through to the provider, so fares are quoted in
             this currency rather than converted after the fact -- a converted
             price would drift from what the airline actually charges. */}
-        <label className="flex items-center gap-2">
-          <span>{t("form.currency")}</span>
+        <label className="min-w-0">
+          <span className="block text-xs mb-1">{t("form.currency")}</span>
           <select
             value={params.currency}
             onChange={(event) => patch({ currency: event.target.value })}
-            className="rounded-lg bg-canvas ring-1 ring-line px-2 py-1.5 max-w-[13rem]"
+            className="w-full rounded bg-canvas border border-line px-2 py-1.5 transition focus:outline-none focus:border-accent"
           >
             {currencies.map((option) => (
               <option key={option.code} value={option.code}>
@@ -269,7 +269,8 @@ export function SearchForm({ busy, onSearch }: Props) {
           </select>
         </label>
 
-        <label className="flex items-center gap-2 cursor-pointer" title={t("form.nearbyHint")}>
+        <label className="col-span-2 sm:col-span-2 lg:col-span-1 flex items-center gap-2 cursor-pointer"
+               title={t("form.nearbyHint")}>
           <input
             type="checkbox"
             checked={params.include_nearby_airports}
@@ -279,7 +280,8 @@ export function SearchForm({ busy, onSearch }: Props) {
           <span>{t("form.nearby")}</span>
         </label>
 
-        <label className="flex items-center gap-2 cursor-pointer" title={t("form.bypassCacheHint")}>
+        <label className="col-span-2 sm:col-span-2 lg:col-span-1 flex items-center gap-2 cursor-pointer"
+               title={t("form.bypassCacheHint")}>
           <input
             type="checkbox"
             checked={params.refresh}
