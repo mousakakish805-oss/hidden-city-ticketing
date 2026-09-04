@@ -14,7 +14,9 @@ interface Props {
 export function AirportInput({ label, hint, value, placeholder, onChange }: Props) {
   const [options, setOptions] = useState<Airport[]>([]);
   const [open, setOpen] = useState(false);
-  const [highlighted, setHighlighted] = useState(0);
+  // -1 means nothing is chosen. Enter then submits the form instead of
+  // silently swapping in an airport nobody asked for.
+  const [highlighted, setHighlighted] = useState(-1);
   const blurTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export function AirportInput({ label, hint, value, placeholder, onChange }: Prop
         .airports(value)
         .then((results) => {
           setOptions(results);
-          setHighlighted(0);
+          setHighlighted(-1);
         })
         .catch(() => setOptions([]));
     }, 150);
@@ -51,9 +53,11 @@ export function AirportInput({ label, hint, value, placeholder, onChange }: Prop
       setHighlighted((index) => (index + 1) % options.length);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setHighlighted((index) => (index - 1 + options.length) % options.length);
+      setHighlighted((index) => (index <= 0 ? options.length : index) - 1);
     } else if (event.key === "Enter") {
-      const airport = options[highlighted];
+      // Only when an option was deliberately chosen with the arrow keys.
+      // Otherwise Enter belongs to the form, and the typed code stands.
+      const airport = highlighted >= 0 ? options[highlighted] : undefined;
       if (airport) {
         event.preventDefault();
         choose(airport);
@@ -104,10 +108,8 @@ export function AirportInput({ label, hint, value, placeholder, onChange }: Prop
               <button
                 type="button"
                 onMouseDown={() => choose(airport)}
-                onMouseEnter={() => setHighlighted(index)}
-                className={`w-full text-start px-3 py-2 flex items-baseline gap-2 ${
-                  index === highlighted ? "bg-surface-2" : ""
-                }`}
+                className={`w-full text-start px-3 py-2 flex items-baseline gap-2
+                            hover:bg-surface-2 ${index === highlighted ? "bg-surface-2" : ""}`}
               >
                 <span className="font-mono font-bold text-accent w-10" dir="ltr">
                   {airport.iata}
