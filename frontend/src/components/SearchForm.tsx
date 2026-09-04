@@ -217,10 +217,11 @@ export function SearchForm({ busy, onSearch }: Props) {
 
       </div>
 
-      <div className="perf notch relative h-3 w-full lg:h-auto lg:w-3 shrink-0" />
+      
 
       <div
         className="p-5 sm:p-6 flex flex-row flex-wrap lg:flex-col gap-x-6 gap-y-4
+                   border-t border-dashed border-line-strong lg:border-t-0 lg:border-s
                    text-sm text-ink-muted lg:w-56 shrink-0"
       >
         <label className="flex items-center gap-2">

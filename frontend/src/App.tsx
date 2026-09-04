@@ -90,22 +90,6 @@ export default function App() {
           </button>
 
           <div className="ms-auto flex items-center gap-2 text-xs shrink-0">
-            {/* Rules live one click from every page. They are the difference
-                between saving money and losing a ticket, so they are not
-                buried behind a results page someone may never reach. */}
-            <button
-              type="button"
-              onClick={() => navigate("rules")}
-              aria-current={route === "rules" ? "page" : undefined}
-              className={`rounded-full px-3 py-1.5 font-semibold ring-1 transition ${
-                            route === "rules"
-                              ? "bg-accent text-accent-ink ring-accent"
-                              : "ring-line-strong text-ink-muted hover:text-ink"
-                          }`}
-            >
-              {t("header.rules")}
-            </button>
-
             {health && (
               <span
                 title={
@@ -178,14 +162,28 @@ export default function App() {
 
             <div className="mt-12">
               <SearchForm busy={busy} onSearch={runSearch} />
-              {coverage && (
-                <p className="mt-3 text-xs text-ink-faint">
-                  {t("app.coverage", {
-                    airports: number(coverage.airports, locale),
-                    countries: number(coverage.countries, locale),
-                  })}
-                </p>
-              )}
+              {/* Directly under the form. These rules are what separates a
+                  saving from a voided ticket, so they belong where someone
+                  is about to search -- not in the header furniture, and not
+                  only on a results page they may never reach. */}
+              <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                <button
+                  type="button"
+                  onClick={() => navigate("rules")}
+                  className="text-sm font-semibold text-accent underline underline-offset-4
+                             decoration-accent-line hover:decoration-accent transition"
+                >
+                  {t("header.rules")}
+                </button>
+                {coverage && (
+                  <p className="text-xs text-ink-faint">
+                    {t("app.coverage", {
+                      airports: number(coverage.airports, locale),
+                      countries: number(coverage.countries, locale),
+                    })}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Genuinely a sequence, so it is numbered; set as three lines of

@@ -18,7 +18,13 @@ export function AirportInput({ label, hint, value, placeholder, onChange }: Prop
   const blurTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    if (!open) return;
+    // Nothing is offered until a letter is typed. Focusing a field that
+    // already reads "AMM" used to fire a search for "AMM" and drop a list
+    // over the form before the visitor had asked for anything.
+    if (!open || value.length === 0) {
+      setOptions([]);
+      return;
+    }
     const timer = window.setTimeout(() => {
       api
         .airports(value)
@@ -75,7 +81,6 @@ export function AirportInput({ label, hint, value, placeholder, onChange }: Prop
           onChange(event.target.value.toUpperCase());
           setOpen(true);
         }}
-        onFocus={() => setOpen(true)}
         onBlur={() => {
           blurTimer.current = window.setTimeout(() => setOpen(false), 150);
         }}

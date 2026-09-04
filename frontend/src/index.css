@@ -168,47 +168,9 @@
   position: relative;
 }
 
-/* The punch line itself. Vertical on wide screens, horizontal when the stub
-   drops below the body. */
-.perf {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--line-strong) 0 6px,
-    transparent 6px 12px
-  );
-  background-size: 1px 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-@media (max-width: 63.999rem) {
-  .perf {
-    background-image: repeating-linear-gradient(
-      to right,
-      var(--line-strong) 0 6px,
-      transparent 6px 12px
-    );
-    background-size: 100% 1px;
-  }
-}
-
-/* The two half-notches that make the perforation read as a tear line rather than
-   a divider. Sized against the card edge so they sit half outside it. */
-.notch::before,
-.notch::after {
-  content: "";
-  position: absolute;
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 9999px;
-  background-color: var(--canvas);
-  border: 1px solid var(--line-strong);
-  z-index: 1;
-}
-.notch::before {
-  top: -0.6rem;
-}
-.notch::after {
-  bottom: -0.6rem;
+/* The coupon that goes unused: still attached, visibly not yours. */
+.abandoned {
+  opacity: 0.55;
 }
 
 /* Machine-printed data: airport codes, flight numbers, fares, times. Not a
