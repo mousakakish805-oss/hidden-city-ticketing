@@ -146,7 +146,10 @@ const en = {
   "standard.title": "Standard flights to {city}",
   "standard.subtitle": "What an ordinary search shows: {count} offers from {price}",
   "standard.cheapest": "cheapest normal fare",
-  "standard.book": "Book",
+  "standard.departs": "Departs",
+  "standard.seeOnGoogle": "See this flight on Google Flights",
+  "standard.bookInstructions":
+    "Search {origin} to {destination} on {date}, one way, and pick this itinerary.",
   "standard.nonstop": "nonstop",
   "standard.stops_one": "1 stop",
   "standard.stops_other": "{count} stops",
@@ -339,7 +342,10 @@ const ar: Record<StringKey, string> = {
   "standard.title": "الرحلات الاعتيادية إلى {city}",
   "standard.subtitle": "ما يعرضه البحث العادي: {count} عرضاً ابتداءً من {price}",
   "standard.cheapest": "أرخص سعر اعتيادي",
-  "standard.book": "احجز",
+  "standard.departs": "المغادرة",
+  "standard.seeOnGoogle": "شاهد هذه الرحلة على Google Flights",
+  "standard.bookInstructions":
+    "ابحث عن رحلة من {origin} إلى {destination} بتاريخ {date}، ذهاب فقط، ثم اختر هذا المسار.",
   "standard.nonstop": "بدون توقف",
   "standard.stops_one": "توقف واحد",
   "standard.stops_other": "عدد محطات التوقف: {count}",

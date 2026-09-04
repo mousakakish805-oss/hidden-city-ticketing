@@ -1,6 +1,6 @@
 import { duration, plural, useI18n } from "../i18n";
 import { googleFlightsUrl } from "../lib/booking";
-import { money, timeOfDay } from "../lib/format";
+import { money, shortDate, timeOfDay } from "../lib/format";
 import type { Offer } from "../types";
 import { SegmentTimeline } from "./SegmentTimeline";
 
@@ -13,12 +13,18 @@ interface Props {
 }
 
 /**
- * An ordinary A -> B result: what any other flight search would show.
+ * An ordinary A -> B fare: what any other flight search would show.
  *
- * It carries a booking link for the same reason the hidden-city cards do.
- * When no anomaly is found -- the common case, and the honest one -- this
- * list is the whole answer, and a page of prices with nothing to act on
- * leaves the reader retyping the route into another site by hand.
+ * Built to the same pattern as the hidden-city card — header and price, the
+ * legs with their flight numbers and times, a row of the four facts that
+ * decide between two fares, then somewhere to book. These are the whole
+ * answer whenever no anomaly is found, which is the common case, and a fare
+ * a traveller might actually take should not be a thinner thing on the page
+ * than one they probably should not.
+ *
+ * Deliberately quieter than the green card: no gradient, no confidence score,
+ * no warnings. Nothing here needs warning about, and the hidden-city result
+ * has to stay the one that catches the eye.
  */
 export function StandardOfferCard({ offer, currency, isCheapest, departureDate }: Props) {
   const { t, locale } = useI18n();
@@ -29,55 +35,104 @@ export function StandardOfferCard({ offer, currency, isCheapest, departureDate }
   const last = itinerary.segments[itinerary.segments.length - 1];
 
   return (
-    <div
-      className={`rounded-xl bg-surface border p-4 ${
+    <article
+      className={`rounded-2xl bg-surface border p-5 ${
         isCheapest ? "border-accent-line" : "border-line"
       }`}
     >
-      {/* One row, one column per fact. Stacking the route over a meta line
-          and pushing the price to the far edge left 657px of nothing in the
-          middle of a 1120px card -- and capping the width instead only made
-          these the one element on the page that did not line up. */}
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-xs text-ink-faint">
-        <div className="min-w-0 shrink-0">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-ink-faint mb-1.5">
+            {offer.stop_count === 0
+              ? t("standard.nonstop")
+              : plural(t, "standard.stops", offer.stop_count)}
+          </p>
           <SegmentTimeline itinerary={itinerary} />
         </div>
 
-        {/* Each field is isolated. Concatenated into one Arabic string they
-            reordered across each other, and "2h 15m" came apart. */}
-        <bdi className="truncate max-w-[12rem]">{offer.primary_carrier_name}</bdi>
-        <bdi>{duration(t, itinerary.duration_minutes)}</bdi>
-        <bdi>
-          {offer.stop_count === 0
-            ? t("standard.nonstop")
-            : plural(t, "standard.stops", offer.stop_count)}
-        </bdi>
-        {first && last && (
-          <bdi dir="ltr">
-            {timeOfDay(first.departure_at, locale)} – {timeOfDay(last.arrival_at, locale)}
-          </bdi>
-        )}
-
-        <div className="flex items-center gap-4 shrink-0">
-          <div className="text-end">
-            <p className="text-xl font-bold text-ink">
-              {money(offer.price_total, currency, locale)}
-            </p>
-            {isCheapest && (
-              <p className="text-xs text-accent font-medium">{t("standard.cheapest")}</p>
-            )}
-          </div>
-          <a
-            href={googleFlightsUrl(offer.search_origin, offer.search_destination, departureDate)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded border border-line-strong px-3 py-1.5 text-xs font-semibold
-                       text-ink-muted hover:text-ink hover:border-accent transition"
-          >
-            {t("standard.book")}
-          </a>
+        <div className="text-end shrink-0">
+          <p className="text-2xl font-bold">{money(offer.price_total, currency, locale)}</p>
+          {isCheapest && (
+            <p className="text-sm font-semibold text-accent mt-0.5">{t("standard.cheapest")}</p>
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Airport codes, flight numbers and times are identifiers -- always
+          left-to-right, whatever the page language. */}
+      <div
+        dir="ltr"
+        className="mt-4 rounded-xl bg-surface-2 border border-line divide-y divide-line"
+      >
+        {itinerary.segments.map((segment, index) => (
+          <div key={index} className="flex items-center gap-3 px-3 py-2 text-sm">
+            <span
+              className="font-mono text-xs text-ink-faint w-16 shrink-0"
+              title={segment.carrier_name}
+            >
+              {segment.carrier} {segment.flight_number}
+            </span>
+            <span className="font-mono">{segment.origin}</span>
+            <span className="text-ink-faint">{timeOfDay(segment.departure_at, locale)}</span>
+            <span className="text-ink-faint" aria-hidden="true">
+              &#8594;
+            </span>
+            <span className="font-mono">{segment.destination}</span>
+            <span className="text-ink-faint">{timeOfDay(segment.arrival_at, locale)}</span>
+            <span className="ms-auto text-xs text-ink-faint">
+              {duration(t, segment.duration_minutes)}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <dl className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+        <div>
+          <dt className="text-ink-faint text-xs">{t("card.travelTime")}</dt>
+          <dd className="font-semibold">{duration(t, itinerary.duration_minutes)}</dd>
+        </div>
+        <div>
+          <dt className="text-ink-faint text-xs">{t("standard.departs")}</dt>
+          <dd className="font-semibold">{first && timeOfDay(first.departure_at, locale)}</dd>
+        </div>
+        <div>
+          <dt className="text-ink-faint text-xs">{t("card.arrive")}</dt>
+          <dd className="font-semibold">
+            {last && (
+              <>
+                {shortDate(last.arrival_at, locale)} {timeOfDay(last.arrival_at, locale)}
+              </>
+            )}
+          </dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-ink-faint text-xs">{t("card.airline")}</dt>
+          <dd className="font-semibold truncate">{offer.primary_carrier_name}</dd>
+        </div>
+      </dl>
+
+      <div className="mt-4 rounded-xl bg-surface-2 border border-line p-4">
+        <p className="text-xs font-semibold text-ink-faint mb-1">{t("booking.title")}</p>
+        <p className="text-sm text-ink-muted">
+          {t("standard.bookInstructions", {
+            origin: offer.search_origin,
+            destination: offer.search_destination,
+            date: departureDate,
+          })}
+        </p>
+        <a
+          href={googleFlightsUrl(offer.search_origin, offer.search_destination, departureDate)}
+          target="_blank"
+          // noreferrer alongside noopener: the destination should not receive
+          // this tool as the referrer.
+          rel="noopener noreferrer"
+          className="mt-3 inline-block rounded bg-accent hover:bg-accent-hover px-4 py-2 text-sm
+                     font-semibold text-accent-ink transition"
+        >
+          {t("standard.seeOnGoogle")}
+        </a>
+        <p className="text-xs text-ink-faint mt-2">{t("booking.note")}</p>
+      </div>
+    </article>
   );
 }
