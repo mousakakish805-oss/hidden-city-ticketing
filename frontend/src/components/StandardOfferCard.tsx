@@ -34,36 +34,35 @@ export function StandardOfferCard({ offer, currency, isCheapest, departureDate }
         isCheapest ? "border-accent-line" : "border-line"
       }`}
     >
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <div className="min-w-0">
+      {/* One row, one column per fact. Stacking the route over a meta line
+          and pushing the price to the far edge left 657px of nothing in the
+          middle of a 1120px card -- and capping the width instead only made
+          these the one element on the page that did not line up. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-xs text-ink-faint">
+        <div className="min-w-0 shrink-0">
           <SegmentTimeline itinerary={itinerary} />
-          {/* Every field is its own <bdi>. Concatenating an airline name, a
-              duration and a clock time into one Arabic sentence let the bidi
-              algorithm reorder across the boundaries: "2h 15m" came apart and
-              the 2 landed at the far end of the line, beside a different
-              field. Isolation fixes that, and laying the fields out with gaps
-              removes the middle dots -- neutral characters that made the
-              reordering worse and read as filler in both languages. */}
-          <p className="mt-1.5 text-xs text-ink-faint flex flex-wrap items-center gap-x-3 gap-y-0.5">
-            <bdi>{offer.primary_carrier_name}</bdi>
-            <bdi>{duration(t, itinerary.duration_minutes)}</bdi>
-            <bdi>
-              {offer.stop_count === 0
-                ? t("standard.nonstop")
-                : plural(t, "standard.stops", offer.stop_count)}
-            </bdi>
-            {first && last && (
-              <bdi dir="ltr">
-                {timeOfDay(first.departure_at, locale)} – {timeOfDay(last.arrival_at, locale)}
-              </bdi>
-            )}
-          </p>
         </div>
-        {/* Price and its action travel together, so the row ends in
-            something to do rather than in several hundred pixels of nothing. */}
-        <div className="flex items-center gap-4 ms-auto shrink-0">
+
+        {/* Each field is isolated. Concatenated into one Arabic string they
+            reordered across each other, and "2h 15m" came apart. */}
+        <bdi className="truncate max-w-[12rem]">{offer.primary_carrier_name}</bdi>
+        <bdi>{duration(t, itinerary.duration_minutes)}</bdi>
+        <bdi>
+          {offer.stop_count === 0
+            ? t("standard.nonstop")
+            : plural(t, "standard.stops", offer.stop_count)}
+        </bdi>
+        {first && last && (
+          <bdi dir="ltr">
+            {timeOfDay(first.departure_at, locale)} – {timeOfDay(last.arrival_at, locale)}
+          </bdi>
+        )}
+
+        <div className="flex items-center gap-4 shrink-0">
           <div className="text-end">
-            <p className="text-xl font-bold">{money(offer.price_total, currency, locale)}</p>
+            <p className="text-xl font-bold text-ink">
+              {money(offer.price_total, currency, locale)}
+            </p>
             {isCheapest && (
               <p className="text-xs text-accent font-medium">{t("standard.cheapest")}</p>
             )}

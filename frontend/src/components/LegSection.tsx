@@ -112,12 +112,7 @@ export function LegSection({ leg, showHeading, disclaimerAccepted, onOpenDisclai
             price: money(baseline.price, currency, locale),
           })}
         </p>
-        {/* Capped well below the page width. Each row holds a route, four
-            short facts and a price; stretched across 1120px that left 657px
-            of nothing in the middle, which reads as a rendering fault rather
-            than as space. The matrix below still gets the full width, because
-            it actually has columns to fill. */}
-        <div className="space-y-2 max-w-3xl">
+        <div className="space-y-2">
           {baseline.offers.slice(0, 6).map((offer) => (
             <StandardOfferCard
               key={offer.offer_id}
