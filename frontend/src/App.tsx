@@ -148,7 +148,7 @@ export default function App() {
             {/* The claim in words, and the same claim as an object. The ticket
                 is the only loud thing on this page; everything below it is
                 deliberately quiet. */}
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
               <div className="max-w-xl">
                 <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08]">
                   {t("hero.title")}

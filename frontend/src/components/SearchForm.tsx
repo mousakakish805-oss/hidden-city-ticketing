@@ -109,8 +109,8 @@ export function SearchForm({ busy, onSearch }: Props) {
       <div
         className={`grid gap-4 items-end ${
           isRoundTrip
-            ? "lg:grid-cols-[1fr_auto_1fr_1fr_1fr_auto]"
-            : "lg:grid-cols-[1fr_auto_1fr_1fr_auto]"
+            ? "sm:grid-cols-2 lg:grid-cols-[1fr_auto_1fr_1fr_1fr_auto]"
+            : "sm:grid-cols-2 lg:grid-cols-[1fr_auto_1fr_1fr_auto]"
         }`}
       >
         <AirportInput
@@ -222,7 +222,7 @@ export function SearchForm({ busy, onSearch }: Props) {
       <div
         className="p-5 sm:p-6 flex flex-row flex-wrap lg:flex-col gap-x-6 gap-y-4
                    border-t border-dashed border-line-strong lg:border-t-0 lg:border-s
-                   text-sm text-ink-muted lg:w-56 shrink-0"
+                   text-sm text-ink-muted lg:w-52 shrink-0"
       >
         <label className="flex items-center gap-2">
           <span>{t("form.passengers")}</span>

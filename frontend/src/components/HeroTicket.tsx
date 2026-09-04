@@ -21,7 +21,7 @@ export function HeroTicket() {
   const { t } = useI18n();
 
   return (
-    <div aria-hidden className="ticket select-none w-full max-w-md flex">
+    <div aria-hidden className="ticket select-none flex w-full max-w-md md:w-[26rem] md:shrink-0">
       {/* Flown. */}
       <div className="flex-1 p-5 min-w-0">
         <p className="text-[11px] text-ink-faint">{t("hero.ticketTo")}</p>
