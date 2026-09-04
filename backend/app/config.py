@@ -89,10 +89,17 @@ class Settings(BaseSettings):
     # traveller would see -- there is no sandbox mode to fall into.
     serpapi_key: str | None = None
     serpapi_base_url: str = "https://serpapi.com"
-    # `deep_search` makes SerpApi reproduce the Google Flights page exactly, at
-    # the cost of a slower response. Left off because a search fans out to
-    # several of these under one deadline; turn it on if results look thin.
-    serpapi_deep_search: bool = False
+    # `deep_search` makes SerpApi reproduce the Google Flights page exactly.
+    #
+    # On by default, and it should stay on. With it off, AMM->JED on
+    # 2026-10-19 priced the 13:30 Saudia nonstop at $146; with it on, the same
+    # flight is $131. A traveller who opens Google to check -- which this site
+    # actively tells them to do -- finds the lower number and has no reason to
+    # trust anything else on the page. Being slower is a much smaller problem
+    # than being wrong by eleven percent.
+    #
+    # It costs no extra quota: still one search, just a slower one.
+    serpapi_deep_search: bool = True
 
     # RapidAPI is a marketplace: one key, many APIs. The key authenticates you,
     # the host selects which listing you are calling, and each listing has its
