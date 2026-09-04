@@ -183,6 +183,33 @@ async def test_every_offer_is_one_way() -> None:
 
 
 @pytest.mark.asyncio
+async def test_asks_for_the_cheapest_not_the_most_convenient() -> None:
+    """The baseline is the number every saving is measured against.
+
+    Google's default "Best" ranking drops cheaper itineraries: AMM->DME came
+    back at JOD 366 under it while the real cheapest was JOD 241, which would
+    have turned fares more expensive than the cheapest ticket into reported
+    savings.
+    """
+    captured: dict[str, str] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/account":
+            return httpx.Response(200, json={"total_searches_left": 231})
+        captured.update(dict(request.url.params))
+        return httpx.Response(200, json=TWO_LEG_RESPONSE)
+
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(handler), base_url="https://serpapi.com"
+    )
+    provider = SerpApiProvider(api_key="test-key", client=client)
+    await provider.search(REQUEST)
+    await provider.aclose()
+
+    assert captured["sort_by"] == "2"
+
+
+@pytest.mark.asyncio
 async def test_a_market_with_no_flights_is_empty_not_fatal() -> None:
     """Thin routes are ordinary; the batch engine must keep going."""
     provider = provider_returning(

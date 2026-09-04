@@ -63,6 +63,19 @@ ONE_WAY = 2
 ANY_NUMBER_OF_STOPS = 0
 NONSTOP_ONLY = 1
 
+# SerpApi defaults to sort_by=1, Google's "Best" ranking, which trades price
+# against convenience and quietly drops cheaper itineraries -- typically
+# low-cost carriers with long layovers.
+#
+# That is not a display preference here, it is a correctness requirement. The
+# cheapest A->B fare is the baseline every hidden-city saving is measured
+# against. Ranked by "Best", AMM->DME on 2026-10-19 came back at JOD 366 when
+# the real cheapest was JOD 241 via Sharjah -- so the baseline was overstated
+# by more than a third, and any fare between the two would have been reported
+# as a saving when it was in fact more expensive than simply booking the
+# cheapest normal ticket.
+SORT_BY_PRICE = 2
+
 # "BA 301" -> ("BA", "301"). Codes are two characters, occasionally with a
 # digit ("U2", "9W"), and the number follows after whitespace.
 _FLIGHT_NUMBER = re.compile(r"^\s*(?P<carrier>[A-Z0-9]{2})\s*(?P<number>\d{1,4})\s*$")
@@ -147,10 +160,12 @@ class SerpApiProvider:
             "travel_class": CABIN_CLASSES.get(request.cabin, 1),
             "currency": request.currency,
             "stops": NONSTOP_ONLY if request.non_stop else ANY_NUMBER_OF_STOPS,
+            "sort_by": SORT_BY_PRICE,
             "hl": "en",
             # Slower, but returns what the Google Flights page itself shows.
-            # Off by default: the batch engine runs several of these under one
-            # deadline, and a complete-but-late answer is no answer.
+            # On by default: with it off the same Saudia nonstop priced at
+            # $146 instead of $131, and this site tells people to go and check
+            # on Google. See settings.serpapi_deep_search.
             "deep_search": str(settings.serpapi_deep_search).lower(),
         }
 
