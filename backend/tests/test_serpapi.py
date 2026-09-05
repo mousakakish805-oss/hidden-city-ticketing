@@ -207,6 +207,10 @@ async def test_asks_for_the_cheapest_not_the_most_convenient() -> None:
     await provider.aclose()
 
     assert captured["sort_by"] == "2"
+    # Google hides itineraries that may be sold as separate tickets, and
+    # hidden-city only works on one ticket -- so this being on is a
+    # deliberate, reversible choice, not an accident.
+    assert captured["show_hidden"] == "true"
 
 
 @pytest.mark.asyncio

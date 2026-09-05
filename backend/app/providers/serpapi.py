@@ -161,6 +161,9 @@ class SerpApiProvider:
             "currency": request.currency,
             "stops": NONSTOP_ONLY if request.non_stop else ANY_NUMBER_OF_STOPS,
             "sort_by": SORT_BY_PRICE,
+            # Widens the candidate set -- and carries a risk SerpApi gives no
+            # way to check. See settings.serpapi_show_hidden.
+            "show_hidden": str(settings.serpapi_show_hidden).lower(),
             "hl": "en",
             # Slower, but returns what the Google Flights page itself shows.
             # On by default: with it off the same Saudia nonstop priced at

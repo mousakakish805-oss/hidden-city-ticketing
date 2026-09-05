@@ -43,17 +43,17 @@ export function RulesPage({ disclaimer, accepted, onAccept, onBack }: Props) {
 
       {/* How the technique works, before the rules about doing it safely.
           A list of prohibitions makes little sense without the mechanism. */}
-      <section className="rounded-2xl bg-surface ring-1 ring-line p-5 max-w-3xl">
+      <section className="rounded-2xl bg-surface border border-line p-5 max-w-3xl">
         <h2 className="font-bold mb-2">{t("rules.howTitle")}</h2>
         <p className="text-sm text-ink-muted leading-relaxed">{t("rules.howBody")}</p>
         <div
           dir="ltr"
-          className="mt-4 rounded-xl bg-surface-2 ring-1 ring-line p-4 font-mono text-sm
+          className="mt-4 rounded-xl bg-surface-2 border border-line p-4 coupon text-sm
                      flex flex-wrap items-center gap-2"
         >
           <span className="font-bold">AMM</span>
           <span className="text-ink-faint">&rarr;</span>
-          <span className="font-bold text-positive bg-positive-soft ring-1 ring-positive-line rounded px-1.5">
+          <span className="font-bold text-positive bg-positive-soft border border-positive-line rounded px-1.5">
             IST
           </span>
           <span className="text-ink-faint">&#8669;</span>
@@ -66,14 +66,14 @@ export function RulesPage({ disclaimer, accepted, onAccept, onBack }: Props) {
 
       {grouped.map((group) => (
         <section key={group.severity} className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-faint">
+          <h2 className="text-sm font-semibold text-ink-faint">
             {t(`rules.group.${group.severity}` as "rules.group.critical")}
           </h2>
 
           {group.rules.map((rule, index) => (
             <article
               key={rule.code}
-              className={`rounded-xl border p-5 ${SEVERITY_CLASS[rule.severity] ?? ""}`}
+              className={`rounded-2xl border p-5 ${SEVERITY_CLASS[rule.severity] ?? ""}`}
             >
               <div className="flex items-baseline gap-3">
                 <span className="text-sm font-bold tabular-nums opacity-60 shrink-0">
@@ -83,7 +83,7 @@ export function RulesPage({ disclaimer, accepted, onAccept, onBack }: Props) {
                   <h3 className="font-bold">{rule.title}</h3>
                   <p className="mt-1.5 text-sm text-ink-muted leading-relaxed">{rule.body}</p>
                   {rule.required && (
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-wider">
+                    <p className="mt-2 text-xs font-semibold">
                       {t("rules.mustAccept")}
                     </p>
                   )}
@@ -94,7 +94,7 @@ export function RulesPage({ disclaimer, accepted, onAccept, onBack }: Props) {
         </section>
       ))}
 
-      <section className="rounded-2xl bg-surface ring-1 ring-line p-5 max-w-3xl">
+      <section className="rounded-2xl bg-surface border border-line p-5 max-w-3xl">
         <h2 className="font-bold mb-2">{t("rules.checklistTitle")}</h2>
         <ol className="space-y-2 text-sm text-ink-muted list-decimal ms-5">
           {["one", "two", "three", "four", "five"].map((step) => (
@@ -105,15 +105,15 @@ export function RulesPage({ disclaimer, accepted, onAccept, onBack }: Props) {
 
       <div className="flex flex-wrap items-center gap-3">
         {accepted ? (
-          <span className="inline-flex items-center gap-2 rounded-lg bg-positive-soft
-                           text-positive ring-1 ring-positive-line px-4 py-2 text-sm font-semibold">
+          <span className="inline-flex items-center gap-2 rounded bg-positive-soft
+                           text-positive border border-positive-line px-4 py-2 text-sm font-semibold">
             {t("rules.alreadyAccepted")}
           </span>
         ) : (
           <button
             type="button"
             onClick={onAccept}
-            className="rounded-lg bg-positive hover:opacity-90 px-5 py-2.5 font-semibold
+            className="rounded bg-positive hover:opacity-90 px-5 py-2.5 font-semibold
                        text-accent-ink transition"
           >
             {t("rules.acceptAll")}
@@ -122,7 +122,7 @@ export function RulesPage({ disclaimer, accepted, onAccept, onBack }: Props) {
         <button
           type="button"
           onClick={onBack}
-          className="rounded-lg ring-1 ring-line-strong px-5 py-2.5 font-semibold
+          className="rounded border border-line-strong px-5 py-2.5 font-semibold
                      text-ink-muted hover:text-ink transition"
         >
           {t("rules.back")}

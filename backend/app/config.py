@@ -101,6 +101,23 @@ class Settings(BaseSettings):
     # It costs no extra quota: still one search, just a slower one.
     serpapi_deep_search: bool = True
 
+    # `show_hidden` returns the itineraries Google collapses out of its own
+    # results -- 26 offers instead of 10 on AMM->DME. Worth having: every extra
+    # itinerary is another routing that might pass through the city you want,
+    # which is the entire search space here. The cheapest fare is unchanged by
+    # it, so it widens the net without moving the baseline.
+    #
+    # CARRIES AN UNRESOLVED RISK. Google hides some results because they are
+    # sold as separate tickets, and hidden-city ticketing only works on a
+    # single ticket -- skip a leg on ticket two and you have merely wasted
+    # ticket two, while the airline has no contract to break. SerpApi exposes
+    # no field marking them, so they cannot be filtered out here: 26 sampled
+    # offers all reported `type: "One way"` on one carrier, which is
+    # reassuring but is not the same as proof.
+    #
+    # Set SERPAPI_SHOW_HIDDEN=false to turn it off without a deploy.
+    serpapi_show_hidden: bool = True
+
     # RapidAPI is a marketplace: one key, many APIs. The key authenticates you,
     # the host selects which listing you are calling, and each listing has its
     # own endpoints and response shape -- hence the separate host setting.
