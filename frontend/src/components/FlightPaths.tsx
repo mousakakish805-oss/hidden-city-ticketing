@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 
+import { WorldMapBackdrop } from "./WorldMapBackdrop";
+
 /**
  * Ambient background layer: curved flight paths with lights travelling along them.
  *
@@ -174,9 +176,10 @@ export function FlightPaths() {
 
   return (
     <div aria-hidden className="ambient" data-testid="ambient-layer">
-      <canvas ref={ref} className="ambient-canvas" />
       <div className="ambient-glow ambient-glow-navy" />
       <div className="ambient-glow ambient-glow-cyan" />
+      <WorldMapBackdrop />
+      <canvas ref={ref} className="ambient-canvas" />
     </div>
   );
 }

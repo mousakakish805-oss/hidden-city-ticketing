@@ -403,3 +403,31 @@ body {
     transform: none;
   }
 }
+
+/* ------------------------------------------------------------- world map --
+ * The Lottie map sits under the flight arcs and over the glows. It is set
+ * low enough to read as texture rather than as a picture -- text is laid
+ * over it and the map has no idea where the text is.
+ *
+ * Dark carries it better than light: on white the map's own pale landmasses
+ * have nothing to sit against, so it is dimmer there.
+ */
+.world-map {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.world-map svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.world-map-ready {
+  opacity: 0.1;
+}
+
+:root[data-theme="dark"] .world-map-ready {
+  opacity: 0.22;
+}
