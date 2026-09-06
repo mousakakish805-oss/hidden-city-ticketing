@@ -224,3 +224,182 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+ * AMBIENT + POLISH LAYER
+ *
+ * Everything below is additive. It styles elements that already exist and
+ * adds one decorative layer behind them; no markup, copy, layout or state is
+ * touched by any of it. Deleting this whole block returns the site exactly to
+ * how it looked before.
+ * ========================================================================== */
+
+:root {
+  --ambient-navy: 12 46 92;
+  --ambient-cyan: 34 184 204;
+  --glow-blur: 120px;
+}
+
+/* Behind everything, immune to the cursor, never scrolls into the way. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ambient-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(var(--glow-blur));
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* The glows belong to the dark theme. Over white they turn the page grey
+   rather than deep. */
+:root[data-theme="dark"] .ambient-glow {
+  opacity: 0.5;
+}
+
+.ambient-glow-navy {
+  width: 46rem;
+  height: 46rem;
+  top: -14rem;
+  inset-inline-start: -12rem;
+  background: radial-gradient(circle, rgb(var(--ambient-navy) / 0.9), transparent 70%);
+}
+
+.ambient-glow-cyan {
+  width: 38rem;
+  height: 38rem;
+  top: 18rem;
+  inset-inline-end: -10rem;
+  background: radial-gradient(circle, rgb(var(--ambient-cyan) / 0.35), transparent 70%);
+}
+
+/* --------------------------------------------------------- the ticket card */
+/* `.ticket` is the search widget and the hero pass. Both gain depth; neither
+   changes shape, size or position. */
+
+:root[data-theme="dark"] .ticket {
+  background-color: rgb(255 255 255 / 0.045);
+  border-color: rgb(255 255 255 / 0.1);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 24px 48px -12px rgb(0 0 0 / 0.6);
+}
+@supports (backdrop-filter: blur(1px)) {
+  :root[data-theme="dark"] .ticket {
+    backdrop-filter: blur(16px) saturate(130%);
+  }
+}
+
+:root[data-theme="light"] .ticket,
+:root:not([data-theme="dark"]) .ticket {
+  border-color: #e5e7eb;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 4px 6px -2px rgb(0 0 0 / 0.04),
+    0 20px 25px -5px rgb(0 0 0 / 0.08);
+}
+
+/* ------------------------------------------------------------ form controls */
+/* A visible, coloured focus ring on whatever is actually focused. Keyboard
+   users get the same signal the design gives a hovering mouse. */
+.ticket input:focus-visible,
+.ticket select:focus-visible,
+.ticket input:focus,
+.ticket select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+:root[data-theme="light"] .ticket input:not([type="checkbox"]),
+:root[data-theme="light"] .ticket select,
+:root:not([data-theme="dark"]) .ticket input:not([type="checkbox"]),
+:root:not([data-theme="dark"]) .ticket select {
+  background-color: #fcfdfe;
+  box-shadow: inset 0 1px 2px rgb(15 23 42 / 0.05);
+}
+
+/* ------------------------------------------------------------- the CTA */
+/* "Find anomalies". Lifts slightly and takes one pass of light on hover. The
+   shimmer is a pseudo-element so the button's own content is untouched. */
+.ticket button[type="submit"] {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s ease,
+    background-color 0.22s ease;
+}
+
+.ticket button[type="submit"]:not(:disabled):hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 20px -6px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.ticket button[type="submit"]:not(:disabled):active {
+  transform: scale(0.99);
+}
+
+.ticket button[type="submit"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgb(255 255 255 / 0.28) 50%,
+    transparent 80%
+  );
+  pointer-events: none;
+}
+
+.ticket button[type="submit"]:not(:disabled):hover::after {
+  animation: shimmer 0.85s ease-out;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+/* -------------------------------------------------------- the swap control */
+/* It already rotated on hover; this makes the rotation a real half-turn with
+   a spring to it, and repeats it on keyboard focus. */
+.ticket button[aria-label] {
+  transition:
+    transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1),
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.ticket button[aria-label]:hover,
+.ticket button[aria-label]:focus-visible {
+  transform: rotate(180deg);
+}
+
+/* Motion here is decoration on decoration. Anyone who asked for less gets the
+   depth and none of the movement -- the canvas makes the same check itself. */
+@media (prefers-reduced-motion: reduce) {
+  .ticket button[type="submit"]:not(:disabled):hover::after {
+    animation: none;
+  }
+  .ticket button[aria-label]:hover,
+  .ticket button[aria-label]:focus-visible {
+    transform: none;
+  }
+}

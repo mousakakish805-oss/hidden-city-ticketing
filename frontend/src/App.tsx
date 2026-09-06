@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { BatchProgress } from "./components/BatchProgress";
 import { DisclaimerModal } from "./components/DisclaimerModal";
+import { FlightPaths } from "./components/FlightPaths";
 import { HeroPhoto } from "./components/HeroPhoto";
 import { HeroTicket } from "./components/HeroTicket";
 import { LanguageToggle } from "./components/LanguageToggle";
@@ -71,6 +72,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Decorative only, fixed behind everything at -z-10. Purely
+          additive: nothing below it knows it exists. */}
+      <FlightPaths />
+
       <header className="sticky top-0 z-20">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-3
                         bg-canvas border-b border-line">
