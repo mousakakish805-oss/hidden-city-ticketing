@@ -93,15 +93,18 @@ services:
       #   rapidapi  (MAX_CANDIDATE_DESTINATIONS + 1) x 2  first reply is a
       #                                                   fragment, so retried
       #
-      # Against monthly allowances of 250 (SerpApi free) and 20 (RapidAPI
-      # free), a value of 2 buys roughly 83 searches on the first and 3 on the
-      # second. It was set to 2 for the RapidAPI plan.
+      # Raised from 2 to 4, and there is a concrete reason on the record.
+      # AMM->ATH on 2027-01-20 has a real $50 saving: Aegean charges $219 to
+      # land in Athens and $169 to fly through it to Thessaloniki. At 2
+      # candidates the live site priced two onward markets, never looked at
+      # Thessaloniki, and reported no saving. At 4 it finds it.
       #
       # Fewer candidates is a budget decision, never a better search: each city
-      # dropped is an anomaly that cannot be found. 8-12 is where this works
-      # properly, and on 250/month even 4 leaves ~50 searches.
+      # dropped is an anomaly that cannot be found. On SerpApi's 250/month this
+      # costs 5 searches per query instead of 3, and 8-12 is where the search
+      # really does its job if the plan ever allows it.
       - key: MAX_CANDIDATE_DESTINATIONS
-        value: "2"
+        value: "4"
       - key: OFFER_CACHE_TTL_SECONDS
         value: "21600"
       - key: PROVIDER_CONCURRENCY
