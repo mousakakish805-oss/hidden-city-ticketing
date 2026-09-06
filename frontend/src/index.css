@@ -59,7 +59,7 @@
   --line-strong: #3a3a3a;
 
   --ink: #f5f5f5;
-  --ink-muted: #a3a3a3;
+  --ink-muted: #c4c4c4;
   --ink-faint: #6b6b6b;
 
   --accent: #c8102e;
@@ -273,17 +273,18 @@ body {
   position: absolute;
   inset: 0;
   background-color: var(--canvas);
-  /* Tuned against measured contrast, not by eye. At 0.62 the worst frame of
-     the animation left body text at 6.77:1 -- comfortably past WCAG AA, short
-     of the 7:1 AAA bar. These values clear AAA on the worst pixel in the
-     artwork, which means every other pixel is better. */
-  opacity: 0.74;
+  /* Tuned against measured contrast rather than by eye, and deliberately
+     aimed at WCAG AA (4.5:1) rather than AAA. Chasing AAA had veiled the map
+     until it was barely there, which is a poor trade for a background that
+     exists to be seen: the gap between the two bars is real headroom, and it
+     is spent here on letting the artwork show. */
+  opacity: 0.2;
 }
 
 /* The dark theme needs less: its artwork is light-on-black, which is already
    the higher-contrast direction, and too much veil kills the layer outright. */
 :root[data-theme="dark"] .ambient::after {
-  opacity: 0.6;
+  opacity: 0.06;
 }
 
 .ambient-glow {
@@ -467,11 +468,11 @@ body {
    Dark marks on white also carry much further than light marks on black, so
    the light theme needs roughly half the opacity to read as equally present. */
 .world-map-ready {
-  opacity: 0.14;
+  opacity: 0.24;
   filter: invert(1) hue-rotate(180deg);
 }
 
 :root[data-theme="dark"] .world-map-ready {
-  opacity: 0.22;
+  opacity: 0.32;
   filter: none;
 }
