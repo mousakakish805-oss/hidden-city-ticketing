@@ -11,8 +11,9 @@ import { WorldMapBackdrop } from "./WorldMapBackdrop";
  *
  * Three things keep it from becoming a nuisance:
  *
- * * It only draws in the dark theme. Over the light theme's white surfaces the
- *   same arcs read as smudges rather than depth.
+ * * It draws in both themes, but not in the same colour: the cyan that glows
+ *   against black is invisible against white, so the light theme uses the
+ *   page's ink blue instead.
  * * Everything is drawn at 10–20% alpha, so text laid over it stays legible
  *   without the layer needing to know where the text is.
  * * It stops entirely when the tab is hidden, and never starts when the
@@ -75,6 +76,11 @@ export function FlightPaths() {
     const isDark = () =>
       document.documentElement.getAttribute("data-theme") === "dark";
 
+    // Cyan arcs vanish on white, so the light theme draws them in the ink
+    // blue the rest of the page uses for structure. Same shape, legible
+    // against the surface it is actually on.
+    const arcColour = () => (isDark() ? "#5eead4" : "#0a7d91");
+
     const resize = () => {
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
       width = canvas.clientWidth;
@@ -101,14 +107,15 @@ export function FlightPaths() {
 
     const draw = () => {
       context.clearRect(0, 0, width, height);
-      if (!isDark()) return;
+      const colour = arcColour();
+      const particle = isDark() ? "125, 239, 230" : "10, 125, 145";
 
       for (const arc of arcs) {
         const mx = (arc.x1 + arc.x2) / 2;
         const my = (arc.y1 + arc.y2) / 2 - arc.bow;
 
         context.globalAlpha = LINE_ALPHA;
-        context.strokeStyle = "#5eead4";
+        context.strokeStyle = colour;
         context.lineWidth = 1;
         context.beginPath();
         context.moveTo(arc.x1, arc.y1);
@@ -117,8 +124,8 @@ export function FlightPaths() {
 
         const [px, py] = pointOn(arc, arc.t);
         const glow = context.createRadialGradient(px, py, 0, px, py, 26);
-        glow.addColorStop(0, "rgba(125, 239, 230, 0.5)");
-        glow.addColorStop(1, "rgba(125, 239, 230, 0)");
+        glow.addColorStop(0, `rgba(${particle}, 0.5)`);
+        glow.addColorStop(1, `rgba(${particle}, 0)`);
         context.globalAlpha = PARTICLE_ALPHA;
         context.fillStyle = glow;
         context.beginPath();
